@@ -1,4 +1,4 @@
-const GAS_URL = 'YOUR_GAS_WEB_APP_URL'; // Replace with your GAS web app URL
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec'; // Replace with your GAS web app URL
 let role = '';
 let sessionId = '';
 
