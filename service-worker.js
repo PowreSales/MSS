@@ -21,6 +21,11 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  const url = event.request.url;
+  if (url.includes('script.google.com')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
   event.respondWith(
     caches.match(event.request)
       .then(response => response || fetch(event.request))
