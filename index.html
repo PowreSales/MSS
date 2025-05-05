@@ -4,139 +4,71 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Medicine Sales System</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <style>
-    body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f4f4f4; }
-    .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h1 { text-align: center; color: #333; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; color: #555; }
-    input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-    button { width: 100%; padding: 10px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
-    button:disabled { background: #6c757d; cursor: not-allowed; }
-    #toast { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 10px 20px; border-radius: 4px; }
-    #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-    .modal-content { background: white; padding: 20px; border-radius: 8px; max-width: 400px; text-align: center; }
-    .modal-content button { margin: 10px; padding: 8px 16px; }
-    #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.7); color: white; padding: 10px 20px; border-radius: 4px; }
-    #main-app { display: none; }
-    .nav-bar { display: none; background: #333; padding: 10px; margin-bottom: 20px; }
-    .nav-bar.active { display: flex; justify-content: space-around; }
-    .nav-bar button { background: #007BFF; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-    .nav-bar button:hover { background: #0056b3; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-    th { background: #1B4D3E; color: white; }
-    .hidden { display: none; }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <div id="login-form" class="container">
+  <div id="login-container">
+    <h1>Medicine Sales System</h1>
+    <div class="form-group">
+      <label for="username">Username</label>
+      <input type="text" id="username" placeholder="Enter username">
+    </div>
+    <div class="form-group">
+      <label for="password">Password</label>
+      <input type="password" id="password" placeholder="Enter password">
+    </div>
+    <button id="login-btn">Login</button>
+  </div>
+
+  <div id="main-app" class="hidden">
+    <header>
       <h1>Medicine Sales System</h1>
-      <form id="loginForm">
-        <div class="form-group">
-          <label for="username">Username</label>
-          <input type="text" id="username" placeholder="Enter username" autocomplete="username">
-        </div>
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input type="password" id="password" placeholder="Enter password" autocomplete="current-password">
-        </div>
-        <button type="button" id="login-btn">Login</button>
-      </form>
-    </div>
-
-    <div id="main-app" class="hidden">
-      <div class="nav-bar" id="nav-bar">
-        <button id="inventory-btn">Inventory</button>
-        <button id="sales-btn">Sales</button>
-        <button id="reports-btn">Reports</button>
-        <button id="logout-btn">Logout</button>
+      <button id="logout-btn">Logout</button>
+    </header>
+    <nav>
+      <button id="inventory-btn">Inventory</button>
+      <!-- Add more navigation buttons later -->
+    </nav>
+    <div id="inventory-section" class="hidden">
+      <h2>Inventory Management</h2>
+      <div class="form-group">
+        <label for="medicine-name">Medicine Name</label>
+        <input type="text" id="medicine-name" placeholder="Enter medicine name">
       </div>
-
-      <div id="inventory-section" class="hidden">
-        <h2>Inventory Management</h2>
-        <div class="form-group">
-          <label for="medicine-name">Medicine Name</label>
-          <input type="text" id="medicine-name" placeholder="Enter medicine name">
-        </div>
-        <div class="form-group">
-          <label for="unit-price">Unit Price (GHC)</label>
-          <input type="number" id="unit-price" step="0.01" min="0" placeholder="Enter unit price">
-        </div>
-        <div class="form-group">
-          <label for="stock-level">Stock Level</label>
-          <input type="number" id="stock-level" min="0" placeholder="Enter stock level">
-        </div>
-        <button id="add-medicine-btn">Add/Update Medicine</button>
-        <table id="inventory-table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Unit Price (GHC)</th>
-              <th>Stock Level</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+      <div class="form-group">
+        <label for="unit-price">Unit Price (GHC)</label>
+        <input type="number" id="unit-price" step="0.01" min="0" placeholder="Enter unit price">
       </div>
-
-      <div id="sales-section" class="hidden">
-        <h2>Sales Form</h2>
-        <div class="form-group">
-          <label for="sale-date">Sale Date</label>
-          <input type="date" id="sale-date">
-        </div>
-        <div class="form-group">
-          <label for="medicine-select">Medicine</label>
-          <select id="medicine-select" class="medicine-select"></select>
-        </div>
-        <div class="form-group">
-          <label for="quantity">Quantity</label>
-          <input type="number" id="quantity" min="1">
-        </div>
-        <button id="add-sale-btn">Add Sale</button>
+      <div class="form-group">
+        <label for="stock-level">Stock Level</label>
+        <input type="number" id="stock-level" min="0" placeholder="Enter stock level">
       </div>
-
-      <div id="reports-section" class="hidden">
-        <h2>Sales Reports</h2>
-        <div class="form-group">
-          <label for="report-start-date">Start Date</label>
-          <input type="date" id="report-start-date">
-        </div>
-        <div class="form-group">
-          <label for="report-end-date">End Date</label>
-          <input type="date" id="report-end-date">
-        </div>
-        <button id="generate-report-btn">Generate Report</button>
-        <table id="reports-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Medicine</th>
-              <th>Quantity</th>
-              <th>Total (GHC)</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div id="toast"></div>
-    <div id="modal">
-      <div class="modal-content">
-        <h2 id="modal-title"></h2>
-        <p id="modal-message"></p>
-        <div id="modal-buttons"></div>
-      </div>
+      <button id="add-medicine-btn">Add/Update Medicine</button>
+      <table id="inventory-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Unit Price (GHC)</th>
+            <th>Stock Level</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+  <div id="modal" class="modal hidden">
+    <div class="modal-content">
+      <h2 id="modal-title"></h2>
+      <p id="modal-message"></p>
+      <button id="modal-close-btn">Close</button>
+    </div>
+  </div>
+
+  <div id="loading" class="loading hidden">Loading...</div>
+  <div id="toast" class="toast hidden"></div>
+
   <script src="app.js"></script>
+  <script src="service-worker.js"></script>
 </body>
 </html>
