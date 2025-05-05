@@ -102,7 +102,6 @@ function logout() {
   showToast('Logged out successfully');
 }
 
-// Event listeners
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('login-btn').addEventListener('click', login);
   document.getElementById('logout-btn').addEventListener('click', logout);
