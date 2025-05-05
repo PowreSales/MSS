@@ -1,6 +1,7 @@
 const GAS_URL = 'https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec';
 let role = '';
 let sessionId = '';
+let inventoryData = [];
 
 function showModal(title, message) {
   if (document.getElementById('modal').style.display === 'flex') return;
@@ -81,8 +82,13 @@ async function login() {
       sessionId = result.sessionId;
       document.getElementById('login-form').style.display = 'none';
       document.getElementById('main-app').style.display = 'block';
-      document.getElementById('user-role').textContent = role;
+      document.getElementById('nav-bar').classList.add('active');
+      if (role === 'Admin') {
+        document.getElementById('inventory-btn').style.display = 'block';
+      }
+      showSection('inventory-section');
       showToast('Login successful');
+      loadInventory();
     } else {
       showModal('Error', result.message || 'Login failed');
     }
@@ -98,19 +104,109 @@ async function login() {
 function logout() {
   role = '';
   sessionId = '';
+  inventoryData = [];
   document.getElementById('main-app').style.display = 'none';
+  document.getElementById('nav-bar').classList.remove('active');
   document.getElementById('login-form').style.display = 'block';
   document.getElementById('username').value = '';
   document.getElementById('password').value = '';
   showToast('Logged out successfully');
 }
 
+function showSection(sectionId) {
+  document.querySelectorAll('#main-app > div').forEach(section => section.classList.add('hidden'));
+  document.getElementById(sectionId).classList.remove('hidden');
+  if (sectionId === 'inventory-section') {
+    loadInventory();
+  }
+}
+
+async function loadInventory() {
+  if (!sessionId) {
+    showModal('Error', 'Session expired. Please log in.');
+    logout();
+    return;
+  }
+  showLoading(true);
+  try {
+    const result = await callGasFunction('getInventory', { sessionId });
+    showLoading(false);
+    if (result.success) {
+      inventoryData = result.data;
+      updateInventoryTable();
+    } else {
+      showModal('Error', result.message || 'Failed to load inventory');
+      if (result.message === 'Invalid session') logout();
+    }
+  } catch (error) {
+    showLoading(false);
+    showModal('Error', error.message || 'Failed to load inventory');
+    console.error('Inventory load error:', error);
+  }
+}
+
+function updateInventoryTable() {
+  const tbody = document.getElementById('inventory-table').getElementsByTagName('tbody')[0];
+  tbody.innerHTML = '';
+  inventoryData.forEach(item => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${item.name}</td>
+      <td>${item.unitPrice.toFixed(2)}</td>
+      <td>${item.stock}</td>
+    `;
+    tbody.appendChild(row);
+  });
+}
+
+async function addMedicine() {
+  if (!sessionId) {
+    showModal('Error', 'Session expired. Please log in.');
+    logout();
+    return;
+  }
+  const name = document.getElementById('medicine-name').value.trim();
+  const unitPrice = parseFloat(document.getElementById('unit-price').value) || 0;
+  const stock = parseInt(document.getElementById('stock-level').value) || 0;
+  if (!name || unitPrice <= 0 || stock < 0) {
+    showToast('Enter valid medicine name, price, and stock');
+    return;
+  }
+  showLoading(true);
+  try {
+    const result = await callGasFunction('addMedicine', {
+      sessionId,
+      data: { name, unitPrice, stock }
+    });
+    showLoading(false);
+    if (result.success) {
+      showModal('Success', 'Medicine added/updated');
+      document.getElementById('medicine-name').value = '';
+      document.getElementById('unit-price').value = '';
+      document.getElementById('stock-level').value = '';
+      loadInventory();
+    } else {
+      showModal('Error', result.message || 'Failed to add medicine');
+      if (result.message === 'Invalid session') logout();
+    }
+  } catch (error) {
+    showLoading(false);
+    showModal('Error', error.message || 'Failed to add medicine');
+    console.error('Add medicine error:', error);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('login-btn').addEventListener('click', login);
   document.getElementById('logout-btn').addEventListener('click', logout);
+  document.getElementById('inventory-btn').addEventListener('click', () => showSection('inventory-section'));
+  document.getElementById('sales-btn').addEventListener('click', () => showSection('sales-section'));
+  document.getElementById('reports-btn').addEventListener('click', () => showSection('reports-section'));
+  document.getElementById('add-medicine-btn').addEventListener('click', addMedicine);
   document.getElementById('modal-buttons').addEventListener('click', (e) => {
     if (e.target.id === 'modal-ok') closeModal();
   });
+  document.getElementById('inventory-btn').style.display = 'none';
 });
 
 if ('serviceWorker' in navigator) {
