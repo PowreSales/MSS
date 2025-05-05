@@ -1,74 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Medicine Sales System</title>
-  <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Screen</title>
+    <style>
+        body {
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            color: #333;
+            font-size: 48px;
+            margin: 0;
+        }
+        p {
+            color: #666;
+            font-size: 18px;
+        }
+        .logout-btn {
+            background-color: #28a745;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 50%;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .nav-menu {
+            margin-top: 20px;
+        }
+        .nav-menu a {
+            color: #28a745;
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-  <div id="login-container">
-    <h1>Medicine Sales System</h1>
-    <div class="form-group">
-      <label for="username">Username</label>
-      <input type="text" id="username" placeholder="Enter username">
+    <h1>Welcome</h1>
+    <p>Logged in as Admin</p>
+    <div class="nav-menu">
+        <a href="#dashboard">Dashboard</a>
+        <a href="#settings">Settings</a>
+        <a href="#reports">Reports</a>
     </div>
-    <div class="form-group">
-      <label for="password">Password</label>
-      <input type="password" id="password" placeholder="Enter password">
-    </div>
-    <button id="login-btn">Login</button>
-  </div>
-
-  <div id="main-app" class="hidden">
-    <header>
-      <h1>Medicine Sales System</h1>
-      <button id="logout-btn">Logout</button>
-    </header>
-    <nav>
-      <button id="inventory-btn">Inventory</button>
-      <!-- Add more navigation buttons later -->
-    </nav>
-    <div id="inventory-section" class="hidden">
-      <h2>Inventory Management</h2>
-      <div class="form-group">
-        <label for="medicine-name">Medicine Name</label>
-        <input type="text" id="medicine-name" placeholder="Enter medicine name">
-      </div>
-      <div class="form-group">
-        <label for="unit-price">Unit Price (GHC)</label>
-        <input type="number" id="unit-price" step="0.01" min="0" placeholder="Enter unit price">
-      </div>
-      <div class="form-group">
-        <label for="stock-level">Stock Level</label>
-        <input type="number" id="stock-level" min="0" placeholder="Enter stock level">
-      </div>
-      <button id="add-medicine-btn">Add/Update Medicine</button>
-      <table id="inventory-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Unit Price (GHC)</th>
-            <th>Stock Level</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-
-  <div id="modal" class="modal hidden">
-    <div class="modal-content">
-      <h2 id="modal-title"></h2>
-      <p id="modal-message"></p>
-      <button id="modal-close-btn">Close</button>
-    </div>
-  </div>
-
-  <div id="loading" class="loading hidden">Loading...</div>
-  <div id="toast" class="toast hidden"></div>
-
-  <script src="app.js"></script>
-  <script src="service-worker.js"></script>
+    <button class="logout-btn" onclick="alert('Logging out...')">Logout</button>
 </body>
 </html>
