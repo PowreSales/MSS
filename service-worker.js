@@ -1,6 +1,6 @@
 const CACHE_NAME = 'medicine-sales-v1';
 const urlsToCache = [
-  '/',
+  '/MSS/',
   '/MSS/index.html',
   '/MSS/app.js',
   'https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js',
@@ -12,7 +12,11 @@ const urlsToCache = [
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+      .then(cache => {
+        console.log('Caching resources');
+        return cache.addAll(urlsToCache);
+      })
+      .catch(err => console.error('Cache addAll error:', err))
   );
 });
 
@@ -20,5 +24,6 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
       .then(response => response || fetch(event.request))
+      .catch(err => console.error('Fetch error:', err))
   );
 });
