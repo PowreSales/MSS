@@ -34,29 +34,32 @@ function showLoading(show) {
   }
 }
 
-async function callGasFunction(functionName, data) {
+function callGasFunction(functionName, data) {
   console.log(`Calling GAS function: ${functionName}`, data);
-  try {
-    const response = await fetch(GAS_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ functionName, data }),
-      mode: 'cors',
-      credentials: 'include'
-    });
-    console.log(`Response status: ${response.status}`);
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`HTTP ${response.status}: ${text.slice(0, 100)}...`);
-    }
-    const result = await response.json();
-    console.log(`Response from ${functionName}:`, result);
-    if (result.error) throw new Error(result.error);
-    return result.data;
-  } catch (error) {
-    console.error(`Error in ${functionName}:`, error);
-    throw error;
-  }
+  return new Promise((resolve, reject) => {
+    const callbackName = 'jsonpCallback_' + Math.random().toString(36).substr(2);
+    window[callbackName] = function(response) {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      if (response.error) {
+        console.error(`Error in ${functionName}:`, response.error);
+        reject(new Error(response.error));
+      } else {
+        console.log(`Response from ${functionName}:`, response);
+        resolve(response.data);
+      }
+    };
+    const script = document.createElement('script');
+    const url = `${GAS_URL}?callback=${callbackName}&functionName=${encodeURIComponent(functionName)}&data=${encodeURIComponent(JSON.stringify(data))}`;
+    script.src = url;
+    script.onerror = () => {
+      delete window[callbackName];
+      document.body.removeChild(script);
+      console.error(`Error in ${functionName}: Script load failed`);
+      reject(new Error('Script load failed'));
+    };
+    document.body.appendChild(script);
+  });
 }
 
 async function login() {
