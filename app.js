@@ -1,4 +1,4 @@
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec'; // Replace with your GAS web app URL
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec';
 let role = '';
 let sessionId = '';
 
@@ -44,6 +44,11 @@ async function callGasFunction(functionName, data) {
       mode: 'cors',
       credentials: 'include'
     });
+    console.log(`Response status: ${response.status}`);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`HTTP ${response.status}: ${text.slice(0, 100)}...`);
+    }
     const result = await response.json();
     console.log(`Response from ${functionName}:`, result);
     if (result.error) throw new Error(result.error);
@@ -107,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/service-worker.js')
+  navigator.serviceWorker.register('/MSS/service-worker.js')
     .then(() => console.log('Service Worker Registered'))
     .catch(err => console.error('Service Worker Error:', err));
 }
