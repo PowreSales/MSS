@@ -6,13 +6,16 @@
   <title>Pharmacy Management</title>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.9.0/cdn.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 400px; margin: 0 auto; padding: 20px; }
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
     .form-group { margin-bottom: 15px; }
     input { width: 100%; padding: 8px; margin-top: 5px; }
     button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
     button:hover { background: #0056b3; }
     .error { color: red; }
     .success { color: green; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
   </style>
 </head>
 <body>
@@ -22,21 +25,24 @@
     isLoggedIn: false,
     message: '',
     isError: false,
+    salesData: [],
     async login() {
       this.message = '';
       this.isError = false;
       console.log('Login attempt:', { username: this.username, password: this.password });
       try {
         console.log('Calling GAS function: validateUser');
-        const response = await fetch('https://script.google.com/macros/s/<your-gas-script-id>/exec', {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username: this.username, password: this.password })
         });
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
         const result = await response.json();
         if (result.success) {
           this.isLoggedIn = true;
           this.message = result.message;
+          await this.fetchSalesData();
         } else {
           this.isError = true;
           this.message = result.message;
@@ -45,6 +51,33 @@
         this.isError = true;
         this.message = 'Network error: ' + error.message;
         console.error('Login failed:', error);
+      }
+    },
+    async fetchSalesData() {
+      try {
+        console.log('Fetching medicine sales data');
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec?functionName=getMedicineSalesData', {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        const contentType = response.headers.get('Content-Type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('Raw response:', text);
+          throw new Error('Response is not JSON');
+        }
+        const result = await response.json();
+        if (result.success) {
+          this.salesData = result.data;
+        } else {
+          this.isError = true;
+          this.message = result.message;
+        }
+      } catch (error) {
+        this.isError = true;
+        this.message = 'Error fetching sales data: ' + error.message;
+        console.error('Error fetching sales data:', error);
       }
     }
   }">
@@ -65,8 +98,28 @@
     </template>
     <template x-if="isLoggedIn">
       <div>
-        <h1>Welcome</h1>
+        <h1>Medicine Sales Data</h1>
         <p class="success" x-text="message"></p>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Medicine</th>
+              <th>Quantity</th>
+              <th>Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="item in salesData" :key="item.id">
+              <tr>
+                <td x-text="item.id"></td>
+                <td x-text="item.medicine"></td>
+                <td x-text="item.quantity"></td>
+                <td x-text="item.revenue"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
       </div>
     </template>
   </div>
