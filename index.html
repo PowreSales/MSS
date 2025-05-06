@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Medicine Sales</title>
+  <title>Medicine Sales App</title>
 </head>
 <body>
   <!-- LOGIN SECTION -->
@@ -19,7 +19,8 @@
   <ul id="salesList"></ul>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/PASTE_YOUR_URL_HERE/exec";
+    // ✅ YOUR BACKEND URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec";
 
     function login() {
       const username = document.getElementById("username").value;
@@ -33,6 +34,9 @@
       .then(res => res.json())
       .then(data => {
         document.getElementById("loginMessage").textContent = data.message;
+      })
+      .catch(err => {
+        document.getElementById("loginMessage").textContent = "Error: " + err.message;
       });
     }
 
@@ -47,6 +51,9 @@
             li.textContent = `${item.medicine} - Qty: ${item.quantity}, Revenue: $${item.revenue}`;
             list.appendChild(li);
           });
+        })
+        .catch(err => {
+          alert("Error loading data: " + err.message);
         });
     }
   </script>
