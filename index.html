@@ -76,7 +76,6 @@
         this.isError = true;
         this.message = 'Error fetching sales data: ' + error.message;
         console.error('Error fetching sales data:', error);
-        // Fallback to placeholder data
         this.salesData = [
           { id: 1, medicine: 'Paracetamol', quantity: 100, revenue: 500 },
           { id: 2, medicine: 'Ibuprofen', quantity: 50, revenue: 300 }
@@ -140,7 +139,6 @@
   </div>
 
   <script>
-    // Service Worker Registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
