@@ -16,6 +16,9 @@
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
     th { background: #f2f2f2; }
+    .nav { margin-bottom: 20px; }
+    .nav a { margin-right: 10px; color: #007bff; text-decoration: none; }
+    .nav a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
@@ -31,17 +34,22 @@
       this.isError = false;
       console.log('Login attempt:', { username: this.username, password: this.password });
       try {
-        console.log('Calling GAS function: validateUser');
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec', {
+        console.log('Calling GAS function: validateUser via proxy');
+        const response = await fetch('https://your-proxy.herokuapp.com/proxy', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username: this.username, password: this.password }),
-          mode: 'no-cors'
+          body: JSON.stringify({ username: this.username, password: this.password })
         });
-        // Note: no-cors returns an opaque response, so we assume success and test separately
-        this.isLoggedIn = true;
-        this.message = 'Login attempted (check GAS logs for success)';
-        await this.fetchSalesData();
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        const result = await response.json();
+        if (result.success) {
+          this.isLoggedIn = true;
+          this.message = result.message;
+          await this.fetchSalesData();
+        } else {
+          this.isError = true;
+          this.message = result.message;
+        }
       } catch (error) {
         this.isError = true;
         this.message = 'Network error: ' + error.message;
@@ -50,23 +58,38 @@
     },
     async fetchSalesData() {
       try {
-        console.log('Fetching medicine sales data');
-        const response = await fetch('https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec?functionName=getMedicineSalesData', {
+        console.log('Fetching medicine sales data via proxy');
+        const response = await fetch('https://your-proxy.herokuapp.com/proxy?functionName=getMedicineSalesData', {
           method: 'GET',
-          headers: { 'Accept': 'application/json' },
-          mode: 'no-cors'
+          headers: { 'Accept': 'application/json' }
         });
-        // Note: no-cors prevents reading response, so test GAS separately
-        this.salesData = [
-          { id: 1, medicine: 'Paracetamol', quantity: 100, revenue: 500 },
-          { id: 2, medicine: 'Ibuprofen', quantity: 50, revenue: 300 }
-        ]; // Placeholder data
-        this.message = 'Sales data loaded (placeholder)';
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        const result = await response.json();
+        if (result.success) {
+          this.salesData = result.data;
+          this.message = 'Sales data loaded';
+        } else {
+          this.isError = true;
+          this.message = result.message;
+        }
       } catch (error) {
         this.isError = true;
         this.message = 'Error fetching sales data: ' + error.message;
         console.error('Error fetching sales data:', error);
+        // Fallback to placeholder data
+        this.salesData = [
+          { id: 1, medicine: 'Paracetamol', quantity: 100, revenue: 500 },
+          { id: 2, medicine: 'Ibuprofen', quantity: 50, revenue: 300 }
+        ];
       }
+    },
+    logout() {
+      this.isLoggedIn = false;
+      this.username = '';
+      this.password = '';
+      this.salesData = [];
+      this.message = 'Logged out';
+      this.isError = false;
     }
   }">
     <template x-if="!isLoggedIn">
@@ -86,8 +109,12 @@
     </template>
     <template x-if="isLoggedIn">
       <div>
+        <div class="nav">
+          <a href="#" @click.prevent="fetchSalesData()">Sales Data</a>
+          <a href="#" @click.prevent="logout()">Logout</a>
+        </div>
         <h1>Medicine Sales Data</h1>
-        <p class="success" x-text="message"></p>
+        <p :class="isError ? 'error' : 'success'" x-text="message"></p>
         <table>
           <thead>
             <tr>
