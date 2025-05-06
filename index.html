@@ -1,47 +1,142 @@
-function doGet(e) {
-  try {
-    const params = e.parameter;
-    const functionName = params.functionName;
-    if (functionName === 'getMedicineSalesData') {
-      const data = getMedicineSalesData();
-      return ContentService.createTextOutput(
-        JSON.stringify({ success: true, data })
-      ).setMimeType(ContentService.MimeType.JSON);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pharmacy Management</title>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.9.0/cdn.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
+    .form-group { margin-bottom: 15px; }
+    input { width: 100%; padding: 8px; margin-top: 5px; }
+    button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .error { color: red; }
+    .success { color: green; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background: #f2f2f2; }
+  </style>
+</head>
+<body>
+  <div x-data="{
+    username: '',
+    password: '',
+    isLoggedIn: false,
+    message: '',
+    isError: false,
+    salesData: [],
+    async login() {
+      this.message = '';
+      this.isError = false;
+      console.log('Login attempt:', { username: this.username, password: this.password });
+      try {
+        console.log('Calling GAS function: validateUser');
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: this.username, password: this.password })
+        });
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        const result = await response.json();
+        if (result.success) {
+          this.isLoggedIn = true;
+          this.message = result.message;
+          await this.fetchSalesData();
+        } else {
+          this.isError = true;
+          this.message = result.message;
+        }
+      } catch (error) {
+        this.isError = true;
+        this.message = 'Network error: ' + error.message;
+        console.error('Login failed:', error);
+      }
+    },
+    async fetchSalesData() {
+      try {
+        console.log('Fetching medicine sales data');
+        const response = await fetch('https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec?functionName=getMedicineSalesData', {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+        const contentType = response.headers.get('Content-Type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('Raw response:', text);
+          throw new Error('Response is not JSON');
+        }
+        const result = await response.json();
+        if (result.success) {
+          this.salesData = result.data;
+        } else {
+          this.isError = true;
+          this.message = result.message;
+        }
+      } catch (error) {
+        this.isError = true;
+        this.message = 'Error fetching sales data: ' + error.message;
+        console.error('Error fetching sales data:', error);
+      }
     }
-    return ContentService.createTextOutput(
-      JSON.stringify({ success: false, message: 'Invalid function name' })
-    ).setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ success: false, message: 'Error: ' + error.message })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-}
+  }">
+    <template x-if="!isLoggedIn">
+      <div>
+        <h1>Pharmacy Management Login</h1>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input id="username" x-model="username" type="text" placeholder="Enter username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input id="password" x-model="password" type="password" placeholder="Enter password">
+        </div>
+        <button @click="login()">Login</button>
+        <p x-show="message" :class="isError ? 'error' : 'success'" x-text="message"></p>
+      </div>
+    </template>
+    <template x-if="isLoggedIn">
+      <div>
+        <h1>Medicine Sales Data</h1>
+        <p class="success" x-text="message"></p>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Medicine</th>
+              <th>Quantity</th>
+              <th>Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            <template x-for="item in salesData" :key="item.id">
+              <tr>
+                <td x-text="item.id"></td>
+                <td x-text="item.medicine"></td>
+                <td x-text="item.quantity"></td>
+                <td x-text="item.revenue"></td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </template>
+  </div>
 
-function doPost(e) {
-  try {
-    const data = JSON.parse(e.postData.contents);
-    const { username, password } = data;
-    // Replace with your authentication logic
-    if (username === 'admin' && password === 'MgrPass2025!') {
-      return ContentService.createTextOutput(
-        JSON.stringify({ success: true, message: 'Login successful' })
-      ).setMimeType(ContentService.MimeType.JSON);
+  <script>
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
+          .then(registration => {
+            console.log('Service Worker Registered:', registration);
+          })
+          .catch(error => {
+            console.error('Service Worker Registration Failed:', error.message, error);
+          });
+      });
     }
-    return ContentService.createTextOutput(
-      JSON.stringify({ success: false, message: 'Invalid credentials' })
-    ).setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    return ContentService.createTextOutput(
-      JSON.stringify({ success: false, message: 'Error: ' + error.message })
-    ).setMimeType(ContentService.MimeType.JSON);
-  }
-}
-
-function getMedicineSalesData() {
-  // Replace with your data retrieval logic (e.g., from Google Sheets)
-  return [
-    { id: 1, medicine: 'Paracetamol', quantity: 100, revenue: 500 },
-    { id: 2, medicine: 'Ibuprofen', quantity: 50, revenue: 300 }
-  ];
-}
+  </script>
+</body>
+</html>
