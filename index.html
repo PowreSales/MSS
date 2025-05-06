@@ -3,7 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pharmacy Management</title>
+  <title>Pharmacy M<!DOCTYPE html>
+<html>
+<head>
+  <title>Medicine Sales</title>
+</head>
+<body>
+  <h2>Login</h2>
+  <input type="text" id="username" placeholder="Username"><br>
+  <input type="password" id="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <p id="loginMessage"></p>
+
+  <hr>
+
+  <h2>Sales Data</h2>
+  <button onclick="loadSalesData()">Load Data</button>
+  <ul id="salesList"></ul>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/PASTE_YOUR_URL_HERE/exec";
+
+    function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("loginMessage").textContent = data.message;
+      });
+    }
+
+    function loadSalesData() {
+      fetch(API_URL + "?functionName=getMedicineSalesData")
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("salesList");
+          list.innerHTML = "";
+          data.data.forEach(item => {
+            const li = document.createElement("li");
+            li.textContent = `${item.medicine} - Qty: ${item.quantity}, Revenue: $${item.revenue}`;
+            list.appendChild(li);
+          });
+        });
+    }
+  </script>
+</body>
+</html>
+anagement</title>
   <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.9.0/cdn.min.js"></script>
   <style>
     body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
