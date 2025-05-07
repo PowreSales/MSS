@@ -1,44 +1,69 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Medicine Sales System</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Medicine Sales System</title>
   <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-  <h1>Medicine Sales System</h1>
-  <div id="navBar" class="nav-container">
-    <button class="btn" id="salesBtn">Sales</button>
-    <button class="btn" id="inventoryBtn">Inventory</button>
-    <button class="btn" id="salesReportsBtn">Sales Reports</button>
+  <div class="container">
+    <h1>Medicine Sales System</h1>
+    <div class="nav">
+      <button class="btn" id="salesBtn">Sales</button>
+      <button class="btn" id="inventoryBtn">Inventory</button>
+      <button class="btn" id="salesReportsBtn">Sales Reports</button>
+    </div>
+    <div id="error"></div>
+    <div id="content"></div>
   </div>
-  <div id="content"></div>
-  <div id="error"></div>
+
+  <!-- Sales Modal -->
   <div id="salesModal" class="modal">
     <div class="modal-content">
-      <span class="close-btn" id="salesModalClose">×</span>
+      <span class="close" id="salesModalClose">&times;</span>
       <p id="modalMessage"></p>
     </div>
   </div>
+
+  <!-- Inventory Modal -->
   <div id="inventoryModal" class="modal">
     <div class="modal-content">
-      <span class="close-btn" id="inventoryModalClose">×</span>
+      <span class="close" id="inventoryModalClose">&times;</span>
       <p id="inventoryModalMessage"></p>
     </div>
   </div>
+
+  <!-- Confirm Modal -->
   <div id="confirmModal" class="modal">
     <div class="modal-content">
       <p id="confirmModalMessage"></p>
       <div class="modal-buttons">
-        <button class="modal-btn modal-btn-yes" id="confirmYes">Yes</button>
-        <button class="modal-btn modal-btn-no" id="confirmNo">No</button>
+        <button class="btn" id="confirmYes">Yes</button>
+        <button class="btn btn-danger" id="confirmNo">No</button>
       </div>
     </div>
   </div>
 
-  <!-- Load Google Apps Script client library -->
-  <script src=https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec"></script>
+  <!-- Google Apps Script -->
+  <script src="https://script.google.com/macros/s/AKfycbzFW4E0x7v77EzpFC6_A5iUIZbOhVKUdG5R5Fufdv2kiisO-pY-Tg4mn88gDJ5gzzfdxw/exec"></script>
+  <!-- Client-side JavaScript -->
   <script src="./script.js"></script>
+  <!-- Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/MSS/sw.js')
+          .then(registration => {
+            console.log('Service Worker registered with scope:', registration.scope);
+          })
+          .catch(error => {
+            console.error('Service Worker registration failed:', error);
+          });
+      });
+    } else {
+      console.log('Service Worker not supported by browser');
+    }
+  </script>
 </body>
 </html>
