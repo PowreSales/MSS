@@ -365,6 +365,9 @@
     </div>
   </div>
 
+  <!-- Load Google Apps Script client library -->
+  <script src="https://script.google.com/macros/s/YOUR_WEB_APP_URL/exec"></script>
+
   <script>
     let itemData = [];
     let inventoryData = [];
@@ -406,6 +409,16 @@
       document.getElementById('salesReportsBtn').classList.remove('btn-active');
       document.getElementById('content').innerHTML = '<p>Loading sales form...</p><div class="spinner" style="display: block;"></div>';
       document.getElementById('error').innerHTML = "";
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        // Fallback for when google.script.run is not available
+        showModal('salesModal', 'Cannot connect to server. Using mock data for testing.', 5000);
+        inventoryData = [
+          { row: 1, name: 'Paracetamol', price: 2.50, cost: 1.80, stock: 100, reorderLevel: 20, purchaseDate: '2025-05-01' },
+          { row: 2, name: 'Ibuprofen', price: 3.00, cost: 2.20, stock: 50, reorderLevel: 15, purchaseDate: '2025-05-02' }
+        ];
+        displaySalesForm();
+        return;
+      }
       withTimeout(
         new Promise((resolve, reject) => {
           google.script.run
@@ -429,12 +442,12 @@
             displaySalesForm();
           } else {
             showModal('salesModal', result.message || 'Failed to load inventory data.', 5000);
-            document.getElementById('content').innerHTML = '<p>Failed to load sales form. Please try again.</p>';
+            document.getElementById('content').innerHTML = '<p>Failed to load sales form. Please try again or add items via the Inventory tab.</p>';
           }
         })
         .catch((error) => {
           showModal('salesModal', error.message || 'Failed to load inventory data. Server may be unreachable.', 5000);
-          document.getElementById('content').innerHTML = '<p>Failed to load sales form. Please try again.</p>';
+          document.getElementById('content').innerHTML = '<p>Failed to load sales form. Please try again or add items via the Inventory tab.</p>';
         });
     }
 
@@ -653,6 +666,10 @@
         paymentMethod: paymentMethod,
         grandTotal: items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)
       };
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showModal('salesModal', 'Cannot connect to server. Sale submission disabled in demo mode.', 5000);
+        return;
+      }
       document.getElementById('result').innerHTML = "Submitting...";
       withTimeout(
         new Promise((resolve, reject) => {
@@ -679,6 +696,10 @@
 
     function showTodaysSalesBreakdown() {
       showModal('salesModal', "Fetching today's sales breakdown...");
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showModal('salesModal', 'Cannot connect to server. Demo mode: No sales data available.', 5000);
+        return;
+      }
       const today = new Date().toISOString().split('T')[0];
       withTimeout(
         new Promise((resolve, reject) => {
@@ -713,6 +734,10 @@
     }
 
     function deleteLastSale() {
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showModal('salesModal', 'Cannot connect to server. Sale deletion disabled in demo mode.', 5000);
+        return;
+      }
       document.getElementById('result').innerHTML = "Deleting last sale...";
       withTimeout(
         new Promise((resolve, reject) => {
@@ -740,6 +765,16 @@
       document.getElementById('salesReportsBtn').classList.remove('btn-active');
       document.getElementById('content').innerHTML = '<p>Loading inventory...</p><div class="spinner" style="display: block;"></div>';
       document.getElementById('error').innerHTML = "";
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        // Fallback for when google.script.run is not available
+        showModal('inventoryModal', 'Cannot connect to server. Using mock data for testing.', 5000);
+        inventoryData = [
+          { row: 1, name: 'Paracetamol', price: 2.50, cost: 1.80, stock: 100, reorderLevel: 20, purchaseDate: '2025-05-01' },
+          { row: 2, name: 'Ibuprofen', price: 3.00, cost: 2.20, stock: 50, reorderLevel: 15, purchaseDate: '2025-05-02' }
+        ];
+        displayInventoryForm();
+        return;
+      }
       withTimeout(
         new Promise((resolve, reject) => {
           google.script.run
@@ -763,12 +798,14 @@
             displayInventoryForm();
           } else {
             showModal('inventoryModal', result.message || 'Failed to load inventory.', 5000);
-            document.getElementById('content').innerHTML = '<p>Failed to load inventory. Please try again.</p>';
+            document.getElementById('content').innerHTML = '<p>Failed to load inventory. Please try again or add items using the form below.</p>';
+            displayInventoryForm(); // Show form anyway for adding items
           }
         })
         .catch((error) => {
           showModal('inventoryModal', error.message || 'Failed to load inventory. Server may be unreachable.', 5000);
-          document.getElementById('content').innerHTML = '<p>Failed to load inventory. Please try again.</p>';
+          document.getElementById('content').innerHTML = '<p>Failed to load inventory. Please try again or add items using the form below.</p>';
+          displayInventoryForm(); // Show form anyway for adding items
         });
     }
 
@@ -988,6 +1025,10 @@
         reorderLevel: reorderLevel,
         purchaseDate: purchaseDate
       };
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showModal('inventoryModal', 'Cannot connect to server. Item addition disabled in demo mode.', 5000);
+        return;
+      }
       withTimeout(
         new Promise((resolve, reject) => {
           google.script.run
@@ -1052,6 +1093,10 @@
         reorderLevel: reorderLevel,
         purchaseDate: purchaseDate
       };
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showModal('inventoryModal', 'Cannot connect to server. Item update disabled in demo mode.', 5000);
+        return;
+      }
       withTimeout(
         new Promise((resolve, reject) => {
           google.script.run
@@ -1078,6 +1123,10 @@
       }
       showConfirmModal("Are you sure you want to delete this item?", () => {
         const item = inventoryData[selectedItemIndex];
+        if (typeof google === 'undefined' || !google.script || !google.script.run) {
+          showModal('inventoryModal', 'Cannot connect to server. Item deletion disabled in demo mode.', 5000);
+          return;
+        }
         withTimeout(
           new Promise((resolve, reject) => {
             google.script.run
@@ -1182,6 +1231,11 @@
         showModal('salesModal', "Start date must be before end date.", 3000);
         return;
       }
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showModal('salesModal', 'Cannot connect to server. Demo mode: No report data available.', 5000);
+        document.getElementById('reportResult').innerHTML = "";
+        return;
+      }
       document.getElementById('reportResult').innerHTML = "Generating report...";
       withTimeout(
         new Promise((resolve, reject) => {
@@ -1255,6 +1309,10 @@
       const endDate = document.getElementById('endDate').value;
       if (!startDate || !endDate) {
         showModal('salesModal', "Please select both start and end dates.", 3000);
+        return;
+      }
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showModal('salesModal', 'Cannot connect to server. PDF export disabled in demo mode.', 5000);
         return;
       }
       withTimeout(
