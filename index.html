@@ -1,169 +1,1421 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+  <title>Medicine Sales System</title>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pharmacy Sales</title>
-  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.9.0/cdn.min.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; }
-    .form-group { margin-bottom: 15px; }
-    select, input { width: 100%; padding: 8px; margin-top: 5px; }
-    button { padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .error { color: red; }
-    .success { color: green; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-    th { background: #f2f2f2; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background-color: #f5f5f5;
+    }
+    h1 {
+      color: #2c3e50;
+      text-align: center;
+      font-size: 64px;
+      margin: 0;
+      padding: 10px 0;
+      background-color: #fff;
+      position: fixed;
+      top: 0;
+      width: 100%;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .nav-container {
+      text-align: center;
+      margin: 0;
+      padding: 10px 0;
+      display: flex;
+      flex-wrap: nowrap;
+      justify-content: center;
+      gap: 10px;
+      background-color: #fff;
+      position: fixed;
+      top: 84px;
+      width: 100%;
+      z-index: 999;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .btn {
+      padding: 8px 16px;
+      margin: 0;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 40px;
+      font-weight: bold;
+      white-space: nowrap;
+      transition: background-color 0.3s, transform 0.2s;
+    }
+    .btn:hover {
+      background-color: #2980b9;
+    }
+    .btn-active {
+      background-color: #2980b9;
+      transform: scale(1.05);
+    }
+    .btn-danger {
+      background-color: #e74c3c;
+    }
+    .btn-danger:hover {
+      background-color: #c0392b;
+    }
+    #content {
+      max-width: 800px;
+      margin: 140px auto 20px;
+      padding: 20px;
+      background-color: white;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .sales-form {
+      background-color: #2e7d32;
+      padding: 20px;
+      border-radius: 5px;
+      color: white;
+    }
+    .sales-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .sales-form h2 {
+      font-size: 36px;
+      margin: 0 0 20px 0;
+    }
+    .sales-form .header-btn {
+      font-size: 24px;
+      padding: 5px 10px;
+    }
+    .inventory-form {
+      background-color: #6a1b9a;
+      padding: 20px;
+      border-radius: 5px;
+      color: white;
+    }
+    .inventory-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .inventory-form h2 {
+      font-size: 36px;
+      margin: 0 0 20px 0;
+    }
+    .inventory-form .header-btn {
+      font-size: 24px;
+      padding: 5px 10px;
+    }
+    .reports-form {
+      background-color: #1B5E20;
+      padding: 20px;
+      border-radius: 5px;
+      color: white;
+    }
+    .form-group {
+      margin: 15px 0;
+      width: 100%;
+    }
+    .sales-form label, .sales-form input, .sales-form select {
+      font-size: 54px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .sales-form input, .sales-form select {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .sales-form .submit-sale-btn {
+      font-size: 42px;
+    }
+    .inventory-form label, .inventory-form input, .inventory-form select, .inventory-form span {
+      font-size: 42px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .inventory-form input, .inventory-form select {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .reports-form label, .reports-form input, .reports-form select {
+      font-size: 80px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .reports-form input, .reports-form select {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    .summary {
+      margin: 20px 0;
+      padding: 10px;
+      border-top: 2px solid #34495e;
+    }
+    .summary h3 {
+      font-size: 24px;
+    }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin: 5px 0;
+      font-size: 24px;
+    }
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      font-size: 28px;
+      margin-top: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+      font-size: 20px;
+    }
+    th {
+      background-color: #ecf0f1;
+    }
+    .low-stock {
+      background-color: #f1c40f;
+      font-weight: bold;
+    }
+    .out-of-stock {
+      background-color: #8B0000;
+      color: white;
+      font-weight: bold;
+    }
+    .profit-positive {
+      color: #00ff00;
+    }
+    .profit-negative {
+      color: #ff4444;
+    }
+    #error {
+      color: red;
+      text-align: center;
+      margin-top: 10px;
+      font-size: 36px;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 2000;
+    }
+    .modal-content {
+      background-color: white;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 500px;
+      text-align: center;
+      border-radius: 5px;
+    }
+    .modal-content p {
+      font-size: 32px;
+      color: #000;
+      font-weight: 900;
+    }
+    .close-btn {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close-btn:hover {
+      color: black;
+    }
+    .modal-buttons {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .modal-btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .modal-btn-yes {
+      background-color: #e74c3c;
+      color: white;
+    }
+    .modal-btn-yes:hover {
+      background-color: #c0392b;
+    }
+    .modal-btn-no {
+      background-color: #3498db;
+      color: white;
+    }
+    .modal-btn-no:hover {
+      background-color: #2980b9;
+    }
+    .login-form {
+      margin: 20px 0;
+    }
+    .login-form label {
+      display: block;
+      margin: 12px 0 5px;
+      font-size: 48px;
+    }
+    .login-form input {
+      width: 100%;
+      padding: 8px;
+      font-size: 45px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+    .login-error {
+      color: red;
+      font-size: 36px;
+      margin-top: 10px;
+    }
+    .spinner {
+      display: none;
+      margin: 10px auto;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 48px;
+      }
+      .nav-container {
+        top: 68px;
+        flex-wrap: wrap;
+        gap: 5px;
+      }
+      .btn {
+        font-size: 32px;
+        padding: 6px 12px;
+      }
+      #content {
+        margin-top: 120px;
+        padding: 10px;
+      }
+      .sales-form label, .sales-form input, .sales-form select {
+        font-size: 40px;
+      }
+      .inventory-form label, .inventory-form input, .inventory-form select, .inventory-form span {
+        font-size: 36px;
+      }
+      .reports-form label, .reports-form input, .reports-form select {
+        font-size: 60px;
+      }
+      .summary h3 {
+        font-size: 20px;
+      }
+      .summary-item {
+        font-size: 18px;
+      }
+      .summary-total {
+        font-size: 22px;
+      }
+      th, td {
+        font-size: 16px;
+        padding: 8px;
+      }
+      .modal-content {
+        width: 90%;
+      }
+      .modal-content p {
+        font-size: 24px;
+      }
+      .login-form label {
+        font-size: 40px;
+      }
+      .login-form input {
+        font-size: 36px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div x-data="{
-    items: [],
-    selectedItem: '',
-    quantity: '',
-    message: '',
-    isError: false,
-    salesData: [],
-    async init() {
-      await this.fetchItems();
-      await this.fetchSalesData();
-    },
-    async fetchItems() {
-      try {
-        console.log('Fetching inventory items');
-        const response = await fetch('https://your-proxy.herokuapp.com/proxy?functionName=getInventoryItems', {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        });
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        const result = await response.json();
-        if (result.success) {
-          this.items = result.data;
-        } else {
-          this.isError = true;
-          this.message = result.message;
-        }
-      } catch (error) {
-        this.isError = true;
-        this.message = 'Error fetching items: ' + error.message;
-        console.error('Error fetching items:', error);
-      }
-    },
-    async submitSale() {
-      this.message = '';
-      this.isError = false;
-      if (!this.selectedItem || !this.quantity || this.quantity <= 0) {
-        this.isError = true;
-        this.message = 'Select an item and enter a valid quantity';
-        return;
-      }
-      try {
-        console.log('Submitting sale:', { item: this.selectedItem, quantity: this.quantity });
-        const response = await fetch('https://your-proxy.herokuapp.com/proxy', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ functionName: 'recordSale', item: this.selectedItem, quantity: parseInt(this.quantity) })
-        });
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        const result = await response.json();
-        if (result.success) {
-          this.message = 'Sale recorded';
-          this.selectedItem = '';
-          this.quantity = '';
-          await this.fetchSalesData();
-          await this.fetchItems();
-        } else {
-          this.isError = true;
-          this.message = result.message;
-        }
-      } catch (error) {
-        this.isError = true;
-        this.message = 'Error recording sale: ' + error.message;
-        console.error('Error recording sale:', error);
-      }
-    },
-    async fetchSalesData() {
-      try {
-        console.log('Fetching medicine sales data');
-        const response = await fetch('https://your-proxy.herokuapp.com/proxy?functionName=getMedicineSalesData', {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' }
-        });
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        const result = await response.json();
-        if (result.success) {
-          this.salesData = result.data;
-          this.message = 'Sales data loaded';
-        } else {
-          this.isError = true;
-          this.message = result.message;
-        }
-      } catch (error) {
-        this.isError = true;
-        this.message = 'Error fetching sales data: ' + error.message;
-        console.error('Error fetching sales data:', error);
-        this.salesData = [
-          { id: 1, medicine: 'Paracetamol', quantity: 100, revenue: 500 },
-          { id: 2, medicine: 'Ibuprofen', quantity: 50, revenue: 300 }
-        ];
-      }
-    }
-  }" x-init="init()">
-    <h1>Pharmacy Sales</h1>
-    <div>
-      <h2>Add Sale</h2>
-      <div class="form-group">
-        <label for="item">Medicine</label>
-        <select id="item" x-model="selectedItem">
-          <option value="">Select Medicine</option>
-          <template x-for="item in items" :key="item.name">
-            <option :value="item.name" x-text="item.name"></option>
-          </template>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="quantity">Quantity</label>
-        <input id="quantity" x-model="quantity" type="number" min="1" placeholder="Enter quantity">
-      </div>
-      <button @click="submitSale()">Record Sale</button>
-      <p :class="isError ? 'error' : 'success'" x-text="message"></p>
+  <h1>Medicine Sales System</h1>
+  <div id="navBar" class="nav-container" style="display: none;">
+    <button class="btn" id="salesBtn" onclick="showSales()">Sales</button>
+    <button class="btn" id="inventoryBtn" onclick="showInventory()" style="display: none;">Inventory</button>
+    <button class="btn" id="salesReportsBtn" onclick="showSalesReports()" style="display: none;">Sales Reports</button>
+    <button class="btn btn-danger" onclick="logout()">Logout</button>
+  </div>
+  <div id="content"></div>
+  <div id="error"></div>
+  <div id="salesModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal('salesModal')">×</span>
+      <p id="modalMessage"></p>
     </div>
-    <h2>Sales Data</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Medicine</th>
-          <th>Quantity</th>
-          <th>Revenue</th>
-        </tr>
-      </thead>
-      <tbody>
-        <template x-for="item in salesData" :key="item.id">
-          <tr>
-            <td x-text="item.id"></td>
-            <td x-text="item.medicine"></td>
-            <td x-text="item.quantity"></td>
-            <td x-text="item.revenue"></td>
-          </tr>
-        </template>
-      </tbody>
-    </table>
+  </div>
+  <div id="inventoryModal" class="modal">
+    <div class="modal-content">
+      <span class="close-btn" onclick="closeModal('inventoryModal')">×</span>
+      <p id="inventoryModalMessage"></p>
+    </div>
+  </div>
+  <div id="confirmModal" class="modal">
+    <div class="modal-content">
+      <p id="confirmModalMessage"></p>
+      <div class="modal-buttons">
+        <button class="modal-btn modal-btn-yes" id="confirmYes">Yes</button>
+        <button class="modal-btn modal-btn-no" id="confirmNo">No</button>
+      </div>
+    </div>
+  </div>
+  <div id="loginModal" class="modal" style="display: block;">
+    <div class="modal-content">
+      <h2>Login</h2>
+      <div class="login-form">
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter username">
+        <label for="password">Password:</label>
+        <input type="password" id="password" placeholder="Enter password">
+        <div id="loginSpinner" class="spinner"></div>
+        <button class="modal-btn modal-btn-yes" id="loginBtn" onclick="validateLogin()">Login</button>
+        <p id="loginError" class="login-error"></p>
+      </div>
+    </div>
   </div>
 
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js', { scope: '/' })
-          .then(registration => {
-            console.log('Service Worker Registered:', registration);
-          })
-          .catch(error => {
-            console.error('Service Worker Registration Failed:', error.message, error);
+    let itemData = [];
+    let inventoryData = [];
+    let itemRows = 1;
+    let selectedItemIndex = null;
+    let isLoggedIn = false;
+    let currentUserRole = null;
+    let currentUsername = null;
+    let sessionId = '';
+
+    function sanitizeInput(input) {
+      if (!input) return '';
+      const div = document.createElement('div');
+      div.textContent = input;
+      return div.innerHTML;
+    }
+
+    function stripHtml(html) {
+      let doc = new DOMParser().parseFromString(html, 'text/html');
+      return doc.body.textContent || "";
+    }
+
+    function validateLogin() {
+      const username = document.getElementById('username').value.trim().toLowerCase();
+      const password = document.getElementById('password').value;
+      const errorElement = document.getElementById('loginError');
+      const loginBtn = document.getElementById('loginBtn');
+      const spinner = document.getElementById('loginSpinner');
+
+      if (!username || !password) {
+        errorElement.textContent = "Please enter both username and password.";
+        setTimeout(() => { errorElement.textContent = ""; }, 3000);
+        return;
+      }
+
+      loginBtn.disabled = true;
+      spinner.style.display = 'block';
+
+      google.script.run
+        .withSuccessHandler((response) => {
+          loginBtn.disabled = false;
+          spinner.style.display = 'none';
+          if (response.success) {
+            isLoggedIn = true;
+            currentUserRole = response.role;
+            currentUsername = username;
+            sessionId = response.sessionId;
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('navBar').style.display = 'flex';
+            if (currentUserRole === "Manager") {
+              document.getElementById('inventoryBtn').style.display = 'inline-block';
+              document.getElementById('salesReportsBtn').style.display = 'inline-block';
+            }
+            showMainInterface();
+          } else {
+            errorElement.textContent = response.message || "Invalid username or password.";
+            setTimeout(() => { errorElement.textContent = ""; }, 5000);
+          }
+        })
+        .withFailureHandler((error) => {
+          loginBtn.disabled = false;
+          spinner.style.display = 'none';
+          errorElement.textContent = "Server error during login: " + (error.message || "Unknown error.");
+          setTimeout(() => { errorElement.textContent = ""; }, 5000);
+        })
+        .validateUser(username, password);
+    }
+
+    function logout() {
+      isLoggedIn = false;
+      currentUserRole = null;
+      currentUsername = null;
+      sessionId = '';
+      itemData = [];
+      inventoryData = [];
+      itemRows = 1;
+      selectedItemIndex = null;
+      document.getElementById('navBar').style.display = 'none';
+      document.getElementById('content').innerHTML = '';
+      document.getElementById('error').innerHTML = '';
+      document.getElementById('loginModal').style.display = 'block';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+    }
+
+    function showMainInterface() {
+      if (!isLoggedIn) return;
+      const contentDiv = document.getElementById('content');
+      document.getElementById('salesBtn').classList.remove('btn-active');
+      document.getElementById('inventoryBtn').classList.remove('btn-active');
+      document.getElementById('salesReportsBtn').classList.remove('btn-active');
+      contentDiv.innerHTML = '<p style="text-align: center; font-weight: bold; font-size: 24px;">Welcome to the Medicine Sales System. Use the navigation above to get started.</p>';
+    }
+
+    function showSales() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('salesModal', "Please log in to access sales.", 3000);
+        logout();
+        return;
+      }
+      document.getElementById('salesBtn').classList.add('btn-active');
+      document.getElementById('inventoryBtn').classList.remove('btn-active');
+      document.getElementById('salesReportsBtn').classList.remove('btn-active');
+      document.getElementById('content').innerHTML = "<p>Loading sales form...</p>";
+      document.getElementById('error').innerHTML = "";
+      google.script.run
+        .withSuccessHandler((result) => {
+          if (result.success) {
+            inventoryData = result.data.map(item => ({
+              row: item.row,
+              name: item.name,
+              price: parseFloat(item.unitPrice) || 0,
+              cost: parseFloat(item.costPrice) || 0,
+              stock: parseInt(item.stock) || 0,
+              reorderLevel: parseInt(item.reorderLevel) || 0,
+              purchaseDate: item.purchaseDate
+            }));
+            displaySalesForm();
+          } else {
+            showModal('salesModal', result.message);
+            if (result.message === 'Invalid session') logout();
+          }
+        })
+        .withFailureHandler((error) => {
+          showModal('salesModal', error.message || "Failed to load inventory data.");
+        })
+        .getInventoryData(sessionId);
+    }
+
+    function displaySalesForm() {
+      if (!inventoryData || inventoryData.length === 0) {
+        document.getElementById('content').innerHTML = "<p>No items found in inventory. Please add items via the Inventory tab (Manager access required).</p>";
+        return;
+      }
+      inventoryData.sort((a, b) => stripHtml(a.name).localeCompare(stripHtml(b.name)));
+      const today = new Date().toISOString().split('T')[0];
+      let html = `
+        <div class="sales-form">
+          <div class="sales-header">
+            <h2>Record Sale</h2>
+            <div>
+              <button class="btn header-btn" onclick="showTodaysSalesBreakdown()">Today's Sales</button>
+              <button class="btn header-btn btn-danger" onclick="confirmDeleteLastSale()">Delete Last Sale</button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Date:</label>
+            <input type="date" id="saleDate" value="${today}" max="${today}">
+          </div>
+          <div id="item-rows">
+            ${createItemRow(1)}
+          </div>
+          <button class="btn" onclick="addItemRow()">Add Another Item</button>
+          <div class="summary" id="purchaseSummary">
+            <h3>Purchase Summary</h3>
+            <div id="summaryItems"></div>
+            <div class="summary-total" id="grandTotal">Grand Total: GHC 0.00</div>
+          </div>
+          <div class="form-group">
+            <label>Payment Method:</label>
+            <select id="paymentMethod">
+              <option value="Cash" selected>Cash</option>
+              <option value="Momo">Momo</option>
+            </select>
+          </div>
+          <button class="btn submit-sale-btn" onclick="submitSale()">Submit Sale</button>
+          <div id="result" style="font-size: 32px; color: white; font-weight: bold; margin-top: 10px; text-align: center;"></div>
+        </div>
+      `;
+      document.getElementById('content').innerHTML = html;
+      updatePrice(1);
+      updateSummary();
+    }
+
+    function createItemRow(rowId) {
+      const inStockItems = inventoryData.filter(item => item.stock > 0);
+      const options = inStockItems.length > 0
+        ? inStockItems.map(m => `<option value="${sanitizeInput(stripHtml(m.name).trim())}" data-price="${m.price}">${sanitizeInput(stripHtml(m.name).trim())} (Stock: ${m.stock})</option>`).join('')
+        : `<option value="" disabled>No items in stock</option>`;
+      return `
+        <div id="row-${rowId}">
+          <div class="form-group">
+            <label>Item:</label>
+            <select id="item-${rowId}" class="item-input" onchange="updatePrice(${rowId})">
+              <option value="">Select item...</option>
+              ${options}
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Unit Price (GHC):</label>
+            <input type="number" id="unitPrice-${rowId}" readonly step="0.01">
+          </div>
+          <div class="form-group">
+            <label>Quantity (Available: <span id="stock-${rowId}">0</span>):</label>
+            <input type="number" id="quantity-${rowId}" min="1" value="1" oninput="validateQuantity(${rowId}); updateSummary()">
+          </div>
+          ${itemRows > 1 ? `<button class="btn btn-danger" onclick="removeItemRow(${rowId})">Remove</button>` : ''}
+        </div>
+      `;
+    }
+
+    function addItemRow() {
+      itemRows++;
+      const newRow = createItemRow(itemRows);
+      document.getElementById('item-rows').insertAdjacentHTML('beforeend', newRow);
+      updatePrice(itemRows);
+      updateSummary();
+    }
+
+    function removeItemRow(rowId) {
+      if (itemRows <= 1) return;
+      const row = document.getElementById(`row-${rowId}`);
+      if (row) {
+        row.remove();
+        itemRows--;
+        updateSummary();
+      }
+    }
+
+    function updatePrice(rowId) {
+      const inputElement = document.getElementById(`item-${rowId}`);
+      const priceElement = document.getElementById(`unitPrice-${rowId}`);
+      const stockElement = document.getElementById(`stock-${rowId}`);
+      const quantityElement = document.getElementById(`quantity-${rowId}`);
+      if (!inputElement || !priceElement || !stockElement || !quantityElement) return;
+      const value = sanitizeInput(inputElement.value.trim());
+      if (!value) {
+        priceElement.value = '';
+        stockElement.textContent = '0';
+        quantityElement.value = '1';
+        updateSummary();
+        return;
+      }
+      let item = inventoryData.find(m => stripHtml(m.name).trim().toLowerCase() === value.toLowerCase());
+      if (!item) {
+        inputElement.value = "";
+        priceElement.value = '';
+        stockElement.textContent = '0';
+        quantityElement.value = '1';
+      } else {
+        const price = Number(item.price) || 0;
+        priceElement.value = price ? price.toFixed(2) : '';
+        stockElement.textContent = item.stock;
+        if (quantityElement.value > item.stock) {
+          quantityElement.value = item.stock;
+        }
+      }
+      updateSummary();
+    }
+
+    function validateQuantity(rowId) {
+      const quantityElement = document.getElementById(`quantity-${rowId}`);
+      const stockElement = document.getElementById(`stock-${rowId}`);
+      const quantity = parseInt(quantityElement.value) || 0;
+      const stock = parseInt(stockElement.textContent) || 0;
+      if (quantity > stock) {
+        quantityElement.value = stock;
+      }
+      if (quantity < 1) {
+        quantityElement.value = 1;
+      }
+    }
+
+    function updateSummary() {
+      let items = [];
+      let grandTotal = 0;
+      for (let i = 1; i <= itemRows; i++) {
+        const itemName = sanitizeInput(document.getElementById(`item-${i}`)?.value.trim());
+        if (itemName && document.getElementById(`row-${i}`)) {
+          const qty = parseInt(document.getElementById(`quantity-${i}`).value) || 0;
+          const price = parseFloat(document.getElementById(`unitPrice-${i}`).value) || 0;
+          const subtotal = qty * price;
+          items.push({
+            name: itemName,
+            qty: qty,
+            price: price,
+            subtotal: subtotal
           });
+          grandTotal += subtotal;
+        }
+      }
+      let summaryHtml = items.length > 0
+        ? items.map(item => `
+            <div class="summary-item">
+              <span>${sanitizeInput(item.name)} (${item.qty} x GHC${item.price.toFixed(2)})</span>
+              <span>GHC${item.subtotal.toFixed(2)}</span>
+            </div>
+          `).join('')
+        : '<p>No items selected.</p>';
+      document.getElementById('summaryItems').innerHTML = summaryHtml;
+      document.getElementById('grandTotal').innerHTML = `Grand Total: GHC${grandTotal.toFixed(2)}`;
+    }
+
+    function submitSale() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('salesModal', "Please log in to submit a sale.", 3000);
+        logout();
+        return;
+      }
+      const saleDate = document.getElementById('saleDate').value;
+      if (!saleDate || !/^\d{4}-\d{2}-\d{2}$/.test(saleDate)) {
+        showModal('salesModal', "Please select a valid date.", 3000);
+        return;
+      }
+      const paymentMethod = document.getElementById('paymentMethod').value;
+      if (!['Cash', 'Momo'].includes(paymentMethod)) {
+        showModal('salesModal', "Please select a valid payment method.", 3000);
+        return;
+      }
+      const items = [];
+      for (let i = 1; i <= itemRows; i++) {
+        const itemNameElement = document.getElementById(`item-${i}`);
+        if (!itemNameElement || !document.getElementById(`row-${i}`)) continue;
+        const itemName = sanitizeInput(itemNameElement.value.trim());
+        if (!itemName) {
+          showModal('salesModal', `Please select an item for row ${i}.`, 3000);
+          return;
+        }
+        const quantity = parseInt(document.getElementById(`quantity-${i}`).value) || 0;
+        const stock = parseInt(document.getElementById(`stock-${i}`).textContent) || 0;
+        if (!Number.isInteger(quantity) || quantity <= 0) {
+          showModal('salesModal', `Invalid quantity for "${itemName}" in row ${i}.`, 3000);
+          return;
+        }
+        if (quantity > stock) {
+          showModal('salesModal', `Quantity for "${itemName}" exceeds available stock (${stock}).`, 3000);
+          return;
+        }
+        const unitPrice = parseFloat(document.getElementById(`unitPrice-${i}`).value) || 0;
+        if (isNaN(unitPrice) || unitPrice <= 0) {
+          showModal('salesModal', `Invalid unit price for "${itemName}" in row ${i}.`, 3000);
+          return;
+        }
+        items.push({
+          medicine: itemName,
+          quantity: quantity,
+          unitPrice: unitPrice
+        });
+      }
+      if (items.length === 0) {
+        showModal('salesModal', "Please select at least one item.", 3000);
+        return;
+      }
+      const saleData = {
+        date: saleDate,
+        items: items,
+        paymentMethod: paymentMethod,
+        grandTotal: items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)
+      };
+      document.getElementById('result').innerHTML = "Submitting...";
+      google.script.run
+        .withSuccessHandler((result) => {
+          document.getElementById('result').innerHTML = result.message || "Sale recorded successfully!";
+          setTimeout(() => {
+            document.getElementById('result').innerHTML = "";
+            itemRows = 1;
+            showSales();
+          }, 2000);
+        })
+        .withFailureHandler((error) => {
+          showModal('salesModal', error.message || "Failed to submit sale.", 5000);
+          document.getElementById('result').innerHTML = "";
+        })
+        .submitSale(sessionId, saleData);
+    }
+
+    function showTodaysSalesBreakdown() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('salesModal', "Please log in to view sales breakdown.", 3000);
+        logout();
+        return;
+      }
+      showModal('salesModal', "Fetching today's sales breakdown...");
+      const today = new Date().toISOString().split('T')[0];
+      google.script.run
+        .withSuccessHandler((result) => {
+          if (result.success) {
+            const summary = result.summary || { cashTotal: 0, momoTotal: 0, totalSales: 0 };
+            const message = `
+              Today's Sales Breakdown:<br>
+              Sales Cash: GHC${summary.cashTotal.toFixed(2)}<br>
+              Sales Momo: GHC${summary.momoTotal.toFixed(2)}<br>
+              Total Sales: GHC${summary.totalSales.toFixed(2)}
+            `;
+            showModal('salesModal', message, 5000);
+          } else {
+            showModal('salesModal', result.message);
+            if (result.message === 'Invalid session') logout();
+          }
+        })
+        .withFailureHandler((error) => {
+          showModal('salesModal', error.message || "Unable to fetch sales breakdown.", 5000);
+        })
+        .getSalesReport(sessionId, today, today);
+    }
+
+    function confirmDeleteLastSale() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('salesModal', "Please log in to delete a sale.", 3000);
+        logout();
+        return;
+      }
+      showConfirmModal("Are you sure you want to delete the last sale?", deleteLastSale);
+    }
+
+    function deleteLastSale() {
+      document.getElementById('result').innerHTML = "Deleting last sale...";
+      google.script.run
+        .withSuccessHandler((result) => {
+          showModal('salesModal', result.message || "Last sale deleted successfully!", 3000);
+          document.getElementById('result').innerHTML = "";
+          showSales();
+        })
+        .withFailureHandler((error) => {
+          showModal('salesModal', error.message || "Failed to delete last sale.", 5000);
+          document.getElementById('result').innerHTML = "";
+        })
+        .deleteLastSale(sessionId);
+    }
+
+    function showInventory() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('inventoryModal', "Please log in to access inventory.", 3000);
+        logout();
+        return;
+      }
+      if (currentUserRole !== "Manager") {
+        showModal('inventoryModal', "Access Denied: Inventory is for Managers only.", 3000);
+        return;
+      }
+      document.getElementById('inventoryBtn').classList.add('btn-active');
+      document.getElementById('salesBtn').classList.remove('btn-active');
+      document.getElementById('salesReportsBtn').classList.remove('btn-active');
+      document.getElementById('content').innerHTML = "<p>Loading inventory...</p>";
+      document.getElementById('error').innerHTML = "";
+      google.script.run
+        .withSuccessHandler((result) => {
+          if (result.success) {
+            inventoryData = result.data.map(item => ({
+              row: item.row,
+              name: item.name,
+              price: parseFloat(item.unitPrice) || 0,
+              cost: parseFloat(item.costPrice) || 0,
+              stock: parseInt(item.stock) || 0,
+              reorderLevel: parseInt(item.reorderLevel) || 0,
+              purchaseDate: item.purchaseDate
+            }));
+            displayInventoryForm();
+          } else {
+            showModal('inventoryModal', result.message);
+            if (result.message === 'Invalid session') logout();
+          }
+        })
+        .withFailureHandler((error) => {
+          showModal('inventoryModal', error.message || "Failed to load inventory.");
+        })
+        .getInventoryData(sessionId);
+    }
+
+    function displayInventoryForm() {
+      const today = new Date().toISOString().split('T')[0];
+      const itemOptions = inventoryData.map(item => `<option value="${sanitizeInput(stripHtml(item.name).trim())}">${sanitizeInput(stripHtml(item.name).trim())}</option>`).join('');
+      let html = `
+        <div class="inventory-form">
+          <div class="inventory-header">
+            <h2>Manage Inventory</h2>
+            <button class="btn header-btn" onclick="showShopWorth()">Shop Worth</button>
+          </div>
+          <div class="form-group">
+            <label>Item Name:</label>
+            <input list="itemNameList" id="itemName" placeholder="Type to search or add new..." oninput="filterInventoryItems(); checkItemSelection()">
+            <datalist id="itemNameList">
+              ${itemOptions}
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label>Current Quantity:</label>
+            <span id="currentQuantity">0</span>
+          </div>
+          <div class="form-group">
+            <label>New Stock Quantity:</label>
+            <input type="number" id="quantityAdjustment" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label>Cost (Unit) (GHC):</label>
+            <input type="number" id="costUnit" min="0" step="0.01" value="0.00">
+          </div>
+          <div class="form-group">
+            <label>Price (Unit) (GHC):</label>
+            <input type="number" id="priceUnit" min="0" step="0.01" value="0.00">
+          </div>
+          <div class="form-group">
+            <label>Purchase Date:</label>
+            <input type="date" id="purchaseDate" value="${today}" max="${today}">
+          </div>
+          <div class="form-group">
+            <label>Reorder Level:</label>
+            <input type="number" id="reorderLevel" min="0" value="0">
+          </div>
+          <div class="button-container" style="display: flex; gap: 10px; margin: 20px 0;">
+            <button class="btn" onclick="addItem()">Add Item</button>
+            <button class="btn" onclick="updateItem()" id="updateBtn" disabled>Update Item</button>
+            <button class="btn btn-danger" onclick="deleteItem()" id="deleteBtn" disabled>Delete Item</button>
+          </div>
+          <div class="form-group">
+            <label>Search:</label>
+            <input type="text" id="searchInput" placeholder="Search by item name" oninput="searchItems()">
+          </div>
+          <div class="form-group">
+            <label>Filter by Status:</label>
+            <select id="filterStatus" onchange="filterItems()">
+              <option value="">All</option>
+              <option value="In Stock">In Stock</option>
+              <option value="Low Stock">Low Stock</option>
+              <option value="Out of Stock">Out of Stock</option>
+            </select>
+          </div>
+          <h3>Inventory List</h3>
+          <table id="inventoryTable">
+            <tr>
+              <th>Item Name</th>
+              <th>Quantity</th>
+              <th>Cost (Unit)</th>
+              <th>Price (Unit)</th>
+              <th>Reorder Level</th>
+              <th>Status</th>
+            </tr>
+            ${renderInventoryTable(inventoryData)}
+          </table>
+        </div>
+      `;
+      document.getElementById('content').innerHTML = html;
+    }
+
+    function renderInventoryTable(data) {
+      return data.map((item, index) => {
+        let status;
+        const stock = parseInt(item.stock) || 0;
+        if (stock === 0) {
+          status = "Out of Stock";
+        } else if (stock <= item.reorderLevel) {
+          status = "Low Stock";
+        } else {
+          status = "In Stock";
+        }
+        const rowClass = status === "Low Stock" ? 'low-stock' : status === "Out of Stock" ? 'out-of-stock' : '';
+        return `
+          <tr onclick="selectItem(${index})" class="${rowClass}">
+            <td>${sanitizeInput(stripHtml(item.name).trim())}</td>
+            <td>${stock}</td>
+            <td>GHC${parseFloat(item.cost).toFixed(2)}</td>
+            <td>GHC${parseFloat(item.price).toFixed(2)}</td>
+            <td>${item.reorderLevel}</td>
+            <td>${status}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function selectItem(index) {
+      selectedItemIndex = index;
+      const item = inventoryData[index];
+      document.getElementById('itemName').value = sanitizeInput(stripHtml(item.name).trim());
+      document.getElementById('currentQuantity').textContent = item.stock;
+      document.getElementById('quantityAdjustment').value = item.stock;
+      document.getElementById('costUnit').value = parseFloat(item.cost).toFixed(2);
+      document.getElementById('priceUnit').value = parseFloat(item.price).toFixed(2);
+      document.getElementById('purchaseDate').value = item.purchaseDate || new Date().toISOString().split('T')[0];
+      document.getElementById('reorderLevel').value = item.reorderLevel;
+      document.getElementById('updateBtn').disabled = false;
+      document.getElementById('deleteBtn').disabled = false;
+    }
+
+    function checkItemSelection() {
+      const inputValue = sanitizeInput(document.getElementById('itemName').value.trim());
+      const selectedItem = inventoryData.find(item => stripHtml(item.name).trim() === inputValue);
+      if (selectedItem) {
+        const index = inventoryData.indexOf(selectedItem);
+        selectItem(index);
+      } else {
+        document.getElementById('currentQuantity').textContent = '0';
+        document.getElementById('quantityAdjustment').value = '0';
+        document.getElementById('costUnit').value = '0.00';
+        document.getElementById('priceUnit').value = '0.00';
+        document.getElementById('purchaseDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('reorderLevel').value = '0';
+        document.getElementById('updateBtn').disabled = true;
+        document.getElementById('deleteBtn').disabled = true;
+        selectedItemIndex = null;
+      }
+    }
+
+    function clearForm() {
+      document.getElementById('itemName').value = '';
+      document.getElementById('currentQuantity').textContent = '0';
+      document.getElementById('quantityAdjustment').value = '0';
+      document.getElementById('costUnit').value = '0.00';
+      document.getElementById('priceUnit').value = '0.00';
+      document.getElementById('purchaseDate').value = new Date().toISOString().split('T')[0];
+      document.getElementById('reorderLevel').value = '0';
+      document.getElementById('updateBtn').disabled = true;
+      document.getElementById('deleteBtn').disabled = true;
+      selectedItemIndex = null;
+    }
+
+    function filterInventoryItems() {
+      const inputElement = document.getElementById('itemName');
+      const datalistElement = document.getElementById('itemNameList');
+      const filterValue = sanitizeInput(inputElement.value.trim().toLowerCase());
+      const filteredOptions = inventoryData
+        .filter(item => stripHtml(item.name).trim().toLowerCase().startsWith(filterValue))
+        .map(item => `<option value="${sanitizeInput(stripHtml(item.name).trim())}">${sanitizeInput(stripHtml(item.name).trim())}</option>`)
+        .join('');
+      datalistElement.innerHTML = filteredOptions;
+    }
+
+    function determineStatus(stock, reorderLevel) {
+      stock = parseInt(stock) || 0;
+      if (stock === 0) {
+        return "Out of Stock";
+      } else if (stock <= reorderLevel) {
+        return "Low Stock";
+      } else {
+        return "In Stock";
+      }
+    }
+
+    function addItem() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('inventoryModal', "Please log in to add an item.", 3000);
+        logout();
+        return;
+      }
+      if (currentUserRole !== "Manager") {
+        showModal('inventoryModal', "Access Denied: Adding items is for Managers only.", 3000);
+        return;
+      }
+      const itemName = sanitizeInput(document.getElementById('itemName').value.trim());
+      if (!itemName) {
+        showModal('inventoryModal', "Item name is required.", 3000);
+        return;
+      }
+      const itemExists = inventoryData.some(item => stripHtml(item.name).trim().toLowerCase() === itemName.toLowerCase());
+      if (itemExists) {
+        showModal('inventoryModal', "Item already exists. Please select it to update.", 3000);
+        return;
+      }
+      const stock = parseInt(document.getElementById('quantityAdjustment').value) || 0;
+      if (!Number.isInteger(stock) || stock < 0) {
+        showModal('inventoryModal', "Stock must be a non-negative integer.", 3000);
+        return;
+      }
+      const cost = parseFloat(document.getElementById('costUnit').value) || 0;
+      if (isNaN(cost) || cost < 0) {
+        showModal('inventoryModal', "Cost must be a non-negative number.", 3000);
+        return;
+      }
+      const price = parseFloat(document.getElementById('priceUnit').value) || 0;
+      if (isNaN(price) || price <= 0) {
+        showModal('inventoryModal', "Price must be a positive number.", 3000);
+        return;
+      }
+      const purchaseDate = document.getElementById('purchaseDate').value;
+      if (!purchaseDate || !/^\d{4}-\d{2}-\d{2}$/.test(purchaseDate)) {
+        showModal('inventoryModal', "Please select a valid purchase date.", 3000);
+        return;
+      }
+      const reorderLevel = parseInt(document.getElementById('reorderLevel').value) || 0;
+      if (!Number.isInteger(reorderLevel) || reorderLevel < 0) {
+        showModal('inventoryModal', "Reorder level must be a non-negative integer.", 3000);
+        return;
+      }
+      const itemData = {
+        name: itemName,
+        unitPrice: price,
+        costPrice: cost,
+        stock: stock,
+        reorderLevel: reorderLevel,
+        purchaseDate: purchaseDate
+      };
+      google.script.run
+        .withSuccessHandler((result) => {
+          showModal('inventoryModal', result.message || "Item added successfully", 2000);
+          clearForm();
+          showInventory();
+        })
+        .withFailureHandler((error) => {
+          showModal('inventoryModal', error.message || "Failed to add item.", 5000);
+        })
+        .addMedicine(sessionId, itemData);
+    }
+
+    function updateItem() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('inventoryModal', "Please log in to update an item.", 3000);
+        logout();
+        return;
+      }
+      if (currentUserRole !== "Manager") {
+        showModal('inventoryModal', "Access Denied: Updating items is for Managers only.", 3000);
+        return;
+      }
+      if (selectedItemIndex === null) {
+        showModal('inventoryModal', "Please select an item to update.", 3000);
+        return;
+      }
+      const itemName = sanitizeInput(document.getElementById('itemName').value.trim());
+      if (!itemName) {
+        showModal('inventoryModal', "Item name is required.", 3000);
+        return;
+      }
+      const stock = parseInt(document.getElementById('quantityAdjustment').value) || 0;
+      if (!Number.isInteger(stock) || stock < 0) {
+        showModal('inventoryModal', "Stock must be a non-negative integer.", 3000);
+        return;
+      }
+      const cost = parseFloat(document.getElementById('costUnit').value) || 0;
+      if (isNaN(cost) || cost < 0) {
+        showModal('inventoryModal', "Cost must be a non-negative number.", 3000);
+        return;
+      }
+      const price = parseFloat(document.getElementById('priceUnit').value) || 0;
+      if (isNaN(price) || price <= 0) {
+        showModal('inventoryModal', "Price must be a positive number.", 3000);
+        return;
+      }
+      const purchaseDate = document.getElementById('purchaseDate').value;
+      if (!purchaseDate || !/^\d{4}-\d{2}-\d{2}$/.test(purchaseDate)) {
+        showModal('inventoryModal', "Please select a valid purchase date.", 3000);
+        return;
+      }
+      const reorderLevel = parseInt(document.getElementById('reorderLevel').value) || 0;
+      if (!Number.isInteger(reorderLevel) || reorderLevel < 0) {
+        showModal('inventoryModal', "Reorder level must be a non-negative integer.", 3000);
+        return;
+      }
+      const item = inventoryData[selectedItemIndex];
+      const itemData = {
+        row: item.row,
+        name: itemName,
+        unitPrice: price,
+        costPrice: cost,
+        stock: stock,
+        reorderLevel: reorderLevel,
+        purchaseDate: purchaseDate
+      };
+      google.script.run
+        .withSuccessHandler((result) => {
+          showModal('inventoryModal', result.message || "Item updated successfully", 2000);
+          clearForm();
+          showInventory();
+        })
+        .withFailureHandler((error) => {
+          showModal('inventoryModal', error.message || "Failed to update item.", 5000);
+        })
+        .editMedicine(sessionId, itemData);
+    }
+
+    function deleteItem() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('inventoryModal', "Please log in to delete an item.", 3000);
+        logout();
+        return;
+      }
+      if (currentUserRole !== "Manager") {
+        showModal('inventoryModal', "Access Denied: Deleting items is for Managers only.", 3000);
+        return;
+      }
+      if (selectedItemIndex === null) {
+        showModal('inventoryModal', "Please select an item to delete.", 3000);
+        return;
+      }
+      showConfirmModal("Are you sure you want to delete this item?", () => {
+        const item = inventoryData[selectedItemIndex];
+        google.script.run
+          .withSuccessHandler((result) => {
+            showModal('inventoryModal', result.message || "Item deleted successfully", 2000);
+            clearForm();
+            showInventory();
+          })
+          .withFailureHandler((error) => {
+            showModal('inventoryModal', error.message || "Failed to delete item.", 5000);
+          })
+          .deleteMedicine(sessionId, item.row);
       });
+    }
+
+    function showShopWorth() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('inventoryModal', "Please log in to view shop worth.", 3000);
+        logout();
+        return;
+      }
+      const totalCost = inventoryData.reduce((sum, item) => {
+        const cost = parseFloat(item.cost) || 0;
+        const stock = parseInt(item.stock) || 0;
+        return sum + (cost * stock);
+      }, 0);
+      const currentDate = new Date().toISOString().split('T')[0];
+      const message = `Your Shop's Worth as at ${currentDate} is GHC${totalCost.toFixed(2)}`;
+      showModal('inventoryModal', message, 5000);
+    }
+
+    function searchItems() {
+      const searchValue = sanitizeInput(document.getElementById('searchInput').value.trim().toLowerCase());
+      const statusFilter = document.getElementById('filterStatus').value;
+      const filteredData = inventoryData.filter(item => {
+        const matchesSearch = stripHtml(item.name).trim().toLowerCase().includes(searchValue);
+        const stock = parseInt(item.stock) || 0;
+        let status;
+        if (stock === 0) {
+          status = "Out of Stock";
+        } else if (stock <= item.reorderLevel) {
+          status = "Low Stock";
+        } else {
+          status = "In Stock";
+        }
+        const matchesStatus = !statusFilter || status === statusFilter;
+        return matchesSearch && matchesStatus;
+      });
+      document.getElementById('inventoryTable').innerHTML = `
+        <tr>
+          <th>Item Name</th>
+          <th>Quantity</th>
+          <th>Cost (Unit)</th>
+          <th>Price (Unit)</th>
+          <th>Reorder Level</th>
+          <th>Status</th>
+        </tr>
+        ${renderInventoryTable(filteredData)}
+      `;
+    }
+
+    function filterItems() {
+      searchItems();
+    }
+
+    function showSalesReports() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('salesModal', "Please log in to access sales reports.", 3000);
+        logout();
+        return;
+      }
+      if (currentUserRole !== "Manager") {
+        showModal('salesModal', "Access Denied: Sales Reports are for Managers only.", 3000);
+        return;
+      }
+      document.getElementById('salesReportsBtn').classList.add('btn-active');
+      document.getElementById('salesBtn').classList.remove('btn-active');
+      document.getElementById('inventoryBtn').classList.remove('btn-active');
+      const today = new Date().toISOString().split('T')[0];
+      const month = today.slice(0, 7);
+      let html = `
+        <div class="reports-form">
+          <h2>Sales Reports</h2>
+          <div class="form-group">
+            <label>Start Date:</label>
+            <input type="date" id="startDate" value="${today}" max="${today}">
+          </div>
+          <div class="form-group">
+            <label>End Date:</label>
+            <input type="date" id="endDate" value="${today}" max="${today}">
+          </div>
+          <button class="btn" onclick="generateReport()">Generate Report</button>
+          <button class="btn" onclick="exportToPDF()">Export to PDF</button>
+          <div id="reportResult"></div>
+        </div>
+      `;
+      document.getElementById('content').innerHTML = html;
+      document.getElementById('error').innerHTML = "";
+      generateReport();
+    }
+
+    function generateReport() {
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      if (!startDate || !endDate) {
+        showModal('salesModal', "Please select both start and end dates.", 3000);
+        return;
+      }
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (start > end) {
+        showModal('salesModal', "Start date must be before end date.", 3000);
+        return;
+      }
+      document.getElementById('reportResult').innerHTML = "Generating report...";
+      google.script.run
+        .withSuccessHandler((result) => {
+          if (result.success) {
+            let html = `
+              <h3>Sales Report: ${startDate} to ${endDate}</h3>
+              <table>
+                <tr>
+                  <th>Date</th>
+                  <th>Item Name</th>
+                  <th>Quantity</th>
+                  <th>Unit Price (GHC)</th>
+                  <th>Subtotal (GHC)</th>
+                  <th>Profit (GHC)</th>
+                  <th>Payment Method</th>
+                </tr>
+                ${result.data.map(sale => `
+                  <tr>
+                    <td>${sanitizeInput(sale.date)}</td>
+                    <td>${sanitizeInput(sale.medicine)}</td>
+                    <td>${sale.quantity}</td>
+                    <td>${(sale.unitPrice || 0).toFixed(2)}</td>
+                    <td>${((sale.unitPrice || 0) * sale.quantity).toFixed(2)}</td>
+                    <td class="${sale.profit >= 0 ? 'profit-positive' : 'profit-negative'}">${(sale.profit || 0).toFixed(2)}</td>
+                    <td>${sanitizeInput(sale.paymentMethod)}</td>
+                  </tr>
+                `).join('')}
+              </table>
+              <div class="summary">
+                <h3>Summary</h3>
+                <div class="summary-item">
+                  <span>Total Sales (Cash):</span>
+                  <span>GHC${(result.summary.cashTotal || 0).toFixed(2)}</span>
+                </div>
+                <div class="summary-item">
+                  <span>Total Sales (Momo):</span>
+                  <span>GHC${(result.summary.momoTotal || 0).toFixed(2)}</span>
+                </div>
+                <div class="summary-total">
+                  <span>Total Sales:</span>
+                  <span>GHC${(result.summary.totalSales || 0).toFixed(2)}</span>
+                </div>
+                <div class="summary-total">
+                  <span>Total Profit:</span>
+                  <span class="${result.summary.totalProfit >= 0 ? 'profit-positive' : 'profit-negative'}">GHC${(result.summary.totalProfit || 0).toFixed(2)}</span>
+                </div>
+              </div>
+            `;
+            document.getElementById('reportResult').innerHTML = html;
+          } else {
+            showModal('salesModal', result.message);
+            if (result.message === 'Invalid session') logout();
+          }
+        })
+        .withFailureHandler((error) => {
+          showModal('salesModal', error.message || "Failed to generate report.", 5000);
+          document.getElementById('reportResult').innerHTML = "";
+        })
+        .getSalesReport(sessionId, startDate, endDate);
+    }
+
+    function exportToPDF() {
+      if (!isLoggedIn || !sessionId) {
+        showModal('salesModal', "Please log in to export report.", 3000);
+        logout();
+        return;
+      }
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+      if (!startDate || !endDate) {
+        showModal('salesModal', "Please select both start and end dates.", 3000);
+        return;
+      }
+      google.script.run
+        .withSuccessHandler((result) => {
+          if (result.success) {
+            window.open(result.url, '_blank');
+            showModal('salesModal', result.message || "Report exported successfully!", 3000);
+          } else {
+            showModal('salesModal', result.message);
+            if (result.message === 'Invalid session') logout();
+          }
+        })
+        .withFailureHandler((error) => {
+          showModal('salesModal', error.message || "Failed to export report.", 5000);
+        })
+        .generateSalesReportPDF(sessionId, startDate, endDate);
+    }
+
+    function showModal(modalId, message, timeout = 0) {
+      const modal = document.getElementById(modalId);
+      const modalMessage = modalId === 'salesModal' ? document.getElementById('modalMessage') : document.getElementById('inventoryModalMessage');
+      modalMessage.innerHTML = sanitizeInput(message);
+      modal.style.display = 'block';
+      if (timeout > 0) {
+        setTimeout(() => {
+          closeModal(modalId);
+        }, timeout);
+      }
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      modal.style.display = 'none';
+    }
+
+    function showConfirmModal(message, onConfirm) {
+      const modal = document.getElementById('confirmModal');
+      document.getElementById('confirmModalMessage').textContent = sanitizeInput(message);
+      modal.style.display = 'block';
+      const yesBtn = document.getElementById('confirmYes');
+      const noBtn = document.getElementById('confirmNo');
+      const newYesBtn = yesBtn.cloneNode(true);
+      const newNoBtn = noBtn.cloneNode(true);
+      yesBtn.parentNode.replaceChild(newYesBtn, yesBtn);
+      noBtn.parentNode.replaceChild(newNoBtn, noBtn);
+      newYesBtn.onclick = () => {
+        closeModal('confirmModal');
+        onConfirm();
+      };
+      newNoBtn.onclick = () => {
+        closeModal('confirmModal');
+      };
     }
   </script>
 </body>
