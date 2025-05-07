@@ -32,7 +32,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Modal functions
   function showModal(modalId, message, timeout = 0) {
     const modal = document.getElementById(modalId);
+    if (!modal) {
+      console.error(`Modal ${modalId} not found`);
+      return;
+    }
     const modalMessage = modalId === 'salesModal' ? document.getElementById('modalMessage') : document.getElementById('inventoryModalMessage');
+    if (!modalMessage) {
+      console.error(`Modal message element for ${modalId} not found`);
+      return;
+    }
     modalMessage.innerHTML = sanitizeInput(message);
     modal.style.display = 'block';
     if (timeout > 0) {
@@ -42,11 +50,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeModal(modalId) {
     const modal = document.getElementById(modalId);
-    modal.style.display = 'none';
+    if (modal) {
+      modal.style.display = 'none';
+    }
   }
 
   function showConfirmModal(message, onConfirm) {
     const modal = document.getElementById('confirmModal');
+    if (!modal) {
+      console.error('Confirm modal not found');
+      return;
+    }
     document.getElementById('confirmModalMessage').textContent = sanitizeInput(message);
     modal.style.display = 'block';
     const yesBtn = document.getElementById('confirmYes');
@@ -65,21 +79,35 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set up modal close buttons
   const salesModalClose = document.getElementById('salesModalClose');
   const inventoryModalClose = document.getElementById('inventoryModalClose');
-  if (salesModalClose) salesModalClose.onclick = () => closeModal('salesModal');
-  if (inventoryModalClose) inventoryModalClose.onclick = () => closeModal('inventoryModal');
+  if (salesModalClose) {
+    salesModalClose.onclick = () => closeModal('salesModal');
+  } else {
+    console.error('Sales modal close button not found');
+  }
+  if (inventoryModalClose) {
+    inventoryModalClose.onclick = () => closeModal('inventoryModal');
+  } else {
+    console.error('Inventory modal close button not found');
+  }
 
   // Main interface
   function showMainInterface() {
+    console.log('showMainInterface called');
     const contentDiv = document.getElementById('content');
     const salesBtn = document.getElementById('salesBtn');
     const inventoryBtn = document.getElementById('inventoryBtn');
     const salesReportsBtn = document.getElementById('salesReportsBtn');
+    if (!contentDiv) {
+      console.error('Content div not found');
+      return;
+    }
+    if (!salesBtn || !inventoryBtn || !salesReportsBtn) {
+      console.error('One or more navigation buttons not found');
+    }
     if (salesBtn) salesBtn.classList.remove('btn-active');
     if (inventoryBtn) inventoryBtn.classList.remove('btn-active');
     if (salesReportsBtn) salesReportsBtn.classList.remove('btn-active');
-    if (contentDiv) {
-      contentDiv.innerHTML = '<p style="text-align: center; font-weight: bold; font-size: 24px;">Welcome to the Medicine Sales System. Use the navigation above to get started.</p>';
-    }
+    contentDiv.innerHTML = '<p style="text-align: center; font-weight: bold; font-size: 24px;">Welcome to the Medicine Sales System. Use the navigation above to get started.</p>';
   }
 
   // Sales functions
@@ -137,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function displaySalesForm() {
+    console.log('displaySalesForm called');
     if (!inventoryData || inventoryData.length === 0) {
       document.getElementById('content').innerHTML = "<p>No items found in inventory. Please add items via the Inventory tab.</p>";
       return;
@@ -176,9 +205,14 @@ document.addEventListener('DOMContentLoaded', () => {
         <div id="result" style="font-size: 32px; color: white; font-weight: bold; margin-top: 10px; text-align: center;"></div>
       </div>
     `;
-    document.getElementById('content').innerHTML = html;
-    updatePrice(1);
-    updateSummary();
+    const contentDiv = document.getElementById('content');
+    if (contentDiv) {
+      contentDiv.innerHTML = html;
+      updatePrice(1);
+      updateSummary();
+    } else {
+      console.error('Content div not found in displaySalesForm');
+    }
   }
 
   function createItemRow(rowId) {
@@ -211,9 +245,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function addItemRow() {
     itemRows++;
     const newRow = createItemRow(itemRows);
-    document.getElementById('item-rows').insertAdjacentHTML('beforeend', newRow);
-    updatePrice(itemRows);
-    updateSummary();
+    const itemRowsDiv = document.getElementById('item-rows');
+    if (itemRowsDiv) {
+      itemRowsDiv.insertAdjacentHTML('beforeend', newRow);
+      updatePrice(itemRows);
+      updateSummary();
+    } else {
+      console.error('Item rows div not found');
+    }
   }
 
   function removeItemRow(rowId) {
@@ -231,7 +270,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceElement = document.getElementById(`unitPrice-${rowId}`);
     const stockElement = document.getElementById(`stock-${rowId}`);
     const quantityElement = document.getElementById(`quantity-${rowId}`);
-    if (!inputElement || !priceElement || !stockElement || !quantityElement) return;
+    if (!inputElement || !priceElement || !stockElement || !quantityElement) {
+      console.error(`One or more elements for row ${rowId} not found`);
+      return;
+    }
     const value = sanitizeInput(inputElement.value.trim());
     if (!value) {
       priceElement.value = '';
@@ -288,6 +330,12 @@ document.addEventListener('DOMContentLoaded', () => {
         grandTotal += subtotal;
       }
     }
+    const summaryItemsDiv = document.getElementById('summaryItems');
+    const grandTotalDiv = document.getElementById('grandTotal');
+    if (!summaryItemsDiv || !grandTotalDiv) {
+      console.error('Summary items or grand total div not found');
+      return;
+    }
     let summaryHtml = items.length > 0
       ? items.map(item => `
           <div class="summary-item">
@@ -296,8 +344,8 @@ document.addEventListener('DOMContentLoaded', () => {
           </div>
         `).join('')
       : '<p>No items selected.</p>';
-    document.getElementById('summaryItems').innerHTML = summaryHtml;
-    document.getElementById('grandTotal').innerHTML = `Grand Total: GHC${grandTotal.toFixed(2)}`;
+    summaryItemsDiv.innerHTML = summaryHtml;
+    grandTotalDiv.innerHTML = `Grand Total: GHC${grandTotal.toFixed(2)}`;
   }
 
   function submitSale() {
@@ -356,7 +404,10 @@ document.addEventListener('DOMContentLoaded', () => {
       showModal('salesModal', 'Cannot connect to server. Sale submission disabled in demo mode.', 2000);
       return;
     }
-    document.getElementById('result').innerHTML = "Submitting...";
+    const resultDiv = document.getElementById('result');
+    if (resultDiv) {
+      resultDiv.innerHTML = "Submitting...";
+    }
     withTimeout(
       new Promise((resolve, reject) => {
         google.script.run
@@ -367,16 +418,18 @@ document.addEventListener('DOMContentLoaded', () => {
       10000
     )
       .then((result) => {
-        document.getElementById('result').innerHTML = result.message || "Sale recorded successfully!";
-        setTimeout(() => {
-          document.getElementById('result').innerHTML = "";
-          itemRows = 1;
-          showSales();
-        }, 2000);
+        if (resultDiv) {
+          resultDiv.innerHTML = result.message || "Sale recorded successfully!";
+          setTimeout(() => {
+            resultDiv.innerHTML = "";
+            itemRows = 1;
+            showSales();
+          }, 2000);
+        }
       })
       .catch((error) => {
         showModal('salesModal', error.message || "Failed to submit sale.", 2000);
-        document.getElementById('result').innerHTML = "";
+        if (resultDiv) resultDiv.innerHTML = "";
       });
   }
 
@@ -427,7 +480,8 @@ document.addEventListener('DOMContentLoaded', () => {
       showModal('salesModal', 'Cannot connect to server. Sale deletion disabled in demo mode.', 2000);
       return;
     }
-    document.getElementById('result').innerHTML = "Deleting last sale...";
+    const resultDiv = document.getElementById('result');
+    if (resultDiv) resultDiv.innerHTML = "Deleting last sale...";
     withTimeout(
       new Promise((resolve, reject) => {
         google.script.run
@@ -439,12 +493,12 @@ document.addEventListener('DOMContentLoaded', () => {
     )
       .then((result) => {
         showModal('salesModal', result.message || "Last sale deleted successfully!", 2000);
-        document.getElementById('result').innerHTML = "";
+        if (resultDiv) resultDiv.innerHTML = "";
         showSales();
       })
       .catch((error) => {
         showModal('salesModal', error.message || "Failed to delete last sale.", 2000);
-        document.getElementById('result').innerHTML = "";
+        if (resultDiv) resultDiv.innerHTML = "";
       });
   }
 
@@ -505,6 +559,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function displayInventoryForm() {
+    console.log('displayInventoryForm called');
     const today = new Date().toISOString().split('T')[0];
     const itemOptions = inventoryData.length > 0
       ? inventoryData.map(item => `<option value="${sanitizeInput(stripHtml(item.name).trim())}">${sanitizeInput(stripHtml(item.name).trim())}</option>`).join('')
@@ -580,7 +635,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ` : '<p>No items in inventory. Add items using the form above.</p>'}
       </div>
     `;
-    document.getElementById('content').innerHTML = html;
+    const contentDiv = document.getElementById('content');
+    if (contentDiv) {
+      contentDiv.innerHTML = html;
+    } else {
+      console.error('Content div not found in displayInventoryForm');
+    }
   }
 
   function renderInventoryTable(data) {
@@ -611,7 +671,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function selectItem(index) {
     selectedItemIndex = index;
     const item = inventoryData[index];
-    document.getElementById('itemName').value = sanitizeInput(stripHtml(item.name).trim());
+    const itemNameInput = document.getElementById('itemName');
+    if (itemNameInput) {
+      itemNameInput.value = sanitizeInput(stripHtml(item.name).trim());
+    }
     document.getElementById('currentQuantity').textContent = item.stock;
     document.getElementById('quantityAdjustment').value = item.stock;
     document.getElementById('costUnit').value = parseFloat(item.cost).toFixed(2);
@@ -642,7 +705,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function clearForm() {
-    document.getElementById('itemName').value = '';
+    const itemNameInput = document.getElementById('itemName');
+    if (itemNameInput) itemNameInput.value = '';
     document.getElementById('currentQuantity').textContent = '0';
     document.getElementById('quantityAdjustment').value = '0';
     document.getElementById('costUnit').value = '0.00';
@@ -657,6 +721,10 @@ document.addEventListener('DOMContentLoaded', () => {
   function filterInventoryItems() {
     const inputElement = document.getElementById('itemName');
     const datalistElement = document.getElementById('itemNameList');
+    if (!inputElement || !datalistElement) {
+      console.error('Item name input or datalist not found');
+      return;
+    }
     const filterValue = sanitizeInput(inputElement.value.trim().toLowerCase());
     const filteredOptions = inventoryData
       .filter(item => stripHtml(item.name).trim().toLowerCase().startsWith(filterValue))
@@ -874,17 +942,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const matchesStatus = !statusFilter || status === statusFilter;
       return matchesSearch && matchesStatus;
     });
-    document.getElementById('inventoryTable').innerHTML = `
-      <tr>
-        <th>Item Name</th>
-        <th>Quantity</th>
-        <th>Cost (Unit)</th>
-        <th>Price (Unit)</th>
-        <th>Reorder Level</th>
-        <th>Status</th>
-      </tr>
-      ${renderInventoryTable(filteredData)}
-    `;
+    const inventoryTable = document.getElementById('inventoryTable');
+    if (inventoryTable) {
+      inventoryTable.innerHTML = `
+        <tr>
+          <th>Item Name</th>
+          <th>Quantity</th>
+          <th>Cost (Unit)</th>
+          <th>Price (Unit)</th>
+          <th>Reorder Level</th>
+          <th>Status</th>
+        </tr>
+        ${renderInventoryTable(filteredData)}
+      `;
+    } else {
+      console.error('Inventory table not found');
+    }
   }
 
   function filterItems() {
@@ -917,9 +990,15 @@ document.addEventListener('DOMContentLoaded', () => {
         <div id="reportResult"></div>
       </div>
     `;
-    document.getElementById('content').innerHTML = html;
-    document.getElementById('error').innerHTML = "";
-    generateReport();
+    const contentDiv = document.getElementById('content');
+    if (contentDiv) {
+      contentDiv.innerHTML = html;
+      const errorDiv = document.getElementById('error');
+      if (errorDiv) errorDiv.innerHTML = "";
+      generateReport();
+    } else {
+      console.error('Content div not found in showSalesReports');
+    }
   }
 
   function generateReport() {
@@ -940,7 +1019,8 @@ document.addEventListener('DOMContentLoaded', () => {
       showModal('salesModal', 'Cannot connect to server. Demo mode: No report data available.', 2000);
       return;
     }
-    document.getElementById('reportResult').innerHTML = "Generating report...";
+    const reportResultDiv = document.getElementById('reportResult');
+    if (reportResultDiv) reportResultDiv.innerHTML = "Generating report...";
     withTimeout(
       new Promise((resolve, reject) => {
         google.script.run
@@ -996,15 +1076,15 @@ document.addEventListener('DOMContentLoaded', () => {
               </div>
             </div>
           `;
-          document.getElementById('reportResult').innerHTML = html;
+          if (reportResultDiv) reportResultDiv.innerHTML = html;
         } else {
           showModal('salesModal', result.message, 2000);
-          document.getElementById('reportResult').innerHTML = "";
+          if (reportResultDiv) reportResultDiv.innerHTML = "";
         }
       })
       .catch((error) => {
         showModal('salesModal', error.message || "Failed to generate report.", 2000);
-        document.getElementById('reportResult').innerHTML = "";
+        if (reportResultDiv) reportResultDiv.innerHTML = "";
       });
   }
 
