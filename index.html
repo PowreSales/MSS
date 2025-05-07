@@ -272,6 +272,20 @@
     .modal-btn-no:hover {
       background-color: #2980b9;
     }
+    .spinner {
+      display: none;
+      margin: 10px auto;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
     @media (max-width: 600px) {
       h1 {
         font-size: 48px;
@@ -371,6 +385,13 @@
       return doc.body.textContent || "";
     }
 
+    function withTimeout(promise, ms) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms))
+      ]);
+    }
+
     function showMainInterface() {
       const contentDiv = document.getElementById('content');
       document.getElementById('salesBtn').classList.remove('btn-active');
@@ -383,10 +404,18 @@
       document.getElementById('salesBtn').classList.add('btn-active');
       document.getElementById('inventoryBtn').classList.remove('btn-active');
       document.getElementById('salesReportsBtn').classList.remove('btn-active');
-      document.getElementById('content').innerHTML = "<p>Loading sales form...</p>";
+      document.getElementById('content').innerHTML = '<p>Loading sales form...</p><div class="spinner" style="display: block;"></div>';
       document.getElementById('error').innerHTML = "";
-      google.script.run
-        .withSuccessHandler((result) => {
+      withTimeout(
+        new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .getInventoryData();
+        }),
+        10000
+      )
+        .then((result) => {
           if (result.success) {
             inventoryData = result.data.map(item => ({
               row: item.row,
@@ -399,13 +428,14 @@
             }));
             displaySalesForm();
           } else {
-            showModal('salesModal', result.message, 5000);
+            showModal('salesModal', result.message || 'Failed to load inventory data.', 5000);
+            document.getElementById('content').innerHTML = '<p>Failed to load sales form. Please try again.</p>';
           }
         })
-        .withFailureHandler((error) => {
-          showModal('salesModal', error.message || "Failed to load inventory data.", 5000);
-        })
-        .getInventoryData();
+        .catch((error) => {
+          showModal('salesModal', error.message || 'Failed to load inventory data. Server may be unreachable.', 5000);
+          document.getElementById('content').innerHTML = '<p>Failed to load sales form. Please try again.</p>';
+        });
     }
 
     function displaySalesForm() {
@@ -624,8 +654,16 @@
         grandTotal: items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0)
       };
       document.getElementById('result').innerHTML = "Submitting...";
-      google.script.run
-        .withSuccessHandler((result) => {
+      withTimeout(
+        new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .submitSale(saleData);
+        }),
+        10000
+      )
+        .then((result) => {
           document.getElementById('result').innerHTML = result.message || "Sale recorded successfully!";
           setTimeout(() => {
             document.getElementById('result').innerHTML = "";
@@ -633,18 +671,25 @@
             showSales();
           }, 2000);
         })
-        .withFailureHandler((error) => {
+        .catch((error) => {
           showModal('salesModal', error.message || "Failed to submit sale.", 5000);
           document.getElementById('result').innerHTML = "";
-        })
-        .submitSale(saleData);
+        });
     }
 
     function showTodaysSalesBreakdown() {
       showModal('salesModal', "Fetching today's sales breakdown...");
       const today = new Date().toISOString().split('T')[0];
-      google.script.run
-        .withSuccessHandler((result) => {
+      withTimeout(
+        new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .getSalesReport(today, today);
+        }),
+        10000
+      )
+        .then((result) => {
           if (result.success) {
             const summary = result.summary || { cashTotal: 0, momoTotal: 0, totalSales: 0 };
             const message = `
@@ -658,10 +703,9 @@
             showModal('salesModal', result.message, 5000);
           }
         })
-        .withFailureHandler((error) => {
+        .catch((error) => {
           showModal('salesModal', error.message || "Unable to fetch sales breakdown.", 5000);
-        })
-        .getSalesReport(today, today);
+        });
     }
 
     function confirmDeleteLastSale() {
@@ -670,27 +714,42 @@
 
     function deleteLastSale() {
       document.getElementById('result').innerHTML = "Deleting last sale...";
-      google.script.run
-        .withSuccessHandler((result) => {
+      withTimeout(
+        new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .deleteLastSale();
+        }),
+        10000
+      )
+        .then((result) => {
           showModal('salesModal', result.message || "Last sale deleted successfully!", 3000);
           document.getElementById('result').innerHTML = "";
           showSales();
         })
-        .withFailureHandler((error) => {
+        .catch((error) => {
           showModal('salesModal', error.message || "Failed to delete last sale.", 5000);
           document.getElementById('result').innerHTML = "";
-        })
-        .deleteLastSale();
+        });
     }
 
     function showInventory() {
       document.getElementById('inventoryBtn').classList.add('btn-active');
       document.getElementById('salesBtn').classList.remove('btn-active');
       document.getElementById('salesReportsBtn').classList.remove('btn-active');
-      document.getElementById('content').innerHTML = "<p>Loading inventory...</p>";
+      document.getElementById('content').innerHTML = '<p>Loading inventory...</p><div class="spinner" style="display: block;"></div>';
       document.getElementById('error').innerHTML = "";
-      google.script.run
-        .withSuccessHandler((result) => {
+      withTimeout(
+        new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .getInventoryData();
+        }),
+        10000
+      )
+        .then((result) => {
           if (result.success) {
             inventoryData = result.data.map(item => ({
               row: item.row,
@@ -703,18 +762,21 @@
             }));
             displayInventoryForm();
           } else {
-            showModal('inventoryModal', result.message, 5000);
+            showModal('inventoryModal', result.message || 'Failed to load inventory.', 5000);
+            document.getElementById('content').innerHTML = '<p>Failed to load inventory. Please try again.</p>';
           }
         })
-        .withFailureHandler((error) => {
-          showModal('inventoryModal', error.message || "Failed to load inventory.", 5000);
-        })
-        .getInventoryData();
+        .catch((error) => {
+          showModal('inventoryModal', error.message || 'Failed to load inventory. Server may be unreachable.', 5000);
+          document.getElementById('content').innerHTML = '<p>Failed to load inventory. Please try again.</p>';
+        });
     }
 
     function displayInventoryForm() {
       const today = new Date().toISOString().split('T')[0];
-      const itemOptions = inventoryData.map(item => `<option value="${sanitizeInput(stripHtml(item.name).trim())}">${sanitizeInput(stripHtml(item.name).trim())}</option>`).join('');
+      const itemOptions = inventoryData.length > 0
+        ? inventoryData.map(item => `<option value="${sanitizeInput(stripHtml(item.name).trim())}">${sanitizeInput(stripHtml(item.name).trim())}</option>`).join('')
+        : '';
       let html = `
         <div class="inventory-form">
           <div class="inventory-header">
@@ -771,17 +833,19 @@
             </select>
           </div>
           <h3>Inventory List</h3>
-          <table id="inventoryTable">
-            <tr>
-              <th>Item Name</th>
-              <th>Quantity</th>
-              <th>Cost (Unit)</th>
-              <th>Price (Unit)</th>
-              <th>Reorder Level</th>
-              <th>Status</th>
-            </tr>
-            ${renderInventoryTable(inventoryData)}
-          </table>
+          ${inventoryData.length > 0 ? `
+            <table id="inventoryTable">
+              <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Cost (Unit)</th>
+                <th>Price (Unit)</th>
+                <th>Reorder Level</th>
+                <th>Status</th>
+              </tr>
+              ${renderInventoryTable(inventoryData)}
+            </table>
+          ` : '<p>No items in inventory. Add items using the form above.</p>'}
         </div>
       `;
       document.getElementById('content').innerHTML = html;
@@ -924,16 +988,23 @@
         reorderLevel: reorderLevel,
         purchaseDate: purchaseDate
       };
-      google.script.run
-        .withSuccessHandler((result) => {
+      withTimeout(
+        new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .addMedicine(itemData);
+        }),
+        10000
+      )
+        .then((result) => {
           showModal('inventoryModal', result.message || "Item added successfully", 2000);
           clearForm();
           showInventory();
         })
-        .withFailureHandler((error) => {
+        .catch((error) => {
           showModal('inventoryModal', error.message || "Failed to add item.", 5000);
-        })
-        .addMedicine(itemData);
+        });
     }
 
     function updateItem() {
@@ -981,16 +1052,23 @@
         reorderLevel: reorderLevel,
         purchaseDate: purchaseDate
       };
-      google.script.run
-        .withSuccessHandler((result) => {
+      withTimeout(
+        new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .editMedicine(itemData);
+        }),
+        10000
+      )
+        .then((result) => {
           showModal('inventoryModal', result.message || "Item updated successfully", 2000);
           clearForm();
           showInventory();
         })
-        .withFailureHandler((error) => {
+        .catch((error) => {
           showModal('inventoryModal', error.message || "Failed to update item.", 5000);
-        })
-        .editMedicine(itemData);
+        });
     }
 
     function deleteItem() {
@@ -1000,16 +1078,23 @@
       }
       showConfirmModal("Are you sure you want to delete this item?", () => {
         const item = inventoryData[selectedItemIndex];
-        google.script.run
-          .withSuccessHandler((result) => {
+        withTimeout(
+          new Promise((resolve, reject) => {
+            google.script.run
+              .withSuccessHandler(resolve)
+              .withFailureHandler(reject)
+              .deleteMedicine(item.row);
+          }),
+          10000
+        )
+          .then((result) => {
             showModal('inventoryModal', result.message || "Item deleted successfully", 2000);
             clearForm();
             showInventory();
           })
-          .withFailureHandler((error) => {
+          .catch((error) => {
             showModal('inventoryModal', error.message || "Failed to delete item.", 5000);
-          })
-          .deleteMedicine(item.row);
+          });
       });
     }
 
@@ -1098,8 +1183,16 @@
         return;
       }
       document.getElementById('reportResult').innerHTML = "Generating report...";
-      google.script.run
-        .withSuccessHandler((result) => {
+      withTimeout(
+        new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .getSalesReport(startDate, endDate);
+        }),
+        10000
+      )
+        .then((result) => {
           if (result.success) {
             let html = `
               <h3>Sales Report: ${startDate} to ${endDate}</h3>
@@ -1148,13 +1241,13 @@
             document.getElementById('reportResult').innerHTML = html;
           } else {
             showModal('salesModal', result.message, 5000);
+            document.getElementById('reportResult').innerHTML = "";
           }
         })
-        .withFailureHandler((error) => {
+        .catch((error) => {
           showModal('salesModal', error.message || "Failed to generate report.", 5000);
           document.getElementById('reportResult').innerHTML = "";
-        })
-        .getSalesReport(startDate, endDate);
+        });
     }
 
     function exportToPDF() {
@@ -1164,8 +1257,16 @@
         showModal('salesModal', "Please select both start and end dates.", 3000);
         return;
       }
-      google.script.run
-        .withSuccessHandler((result) => {
+      withTimeout(
+        new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(resolve)
+            .withFailureHandler(reject)
+            .generateSalesReportPDF(startDate, endDate);
+        }),
+        10000
+      )
+        .then((result) => {
           if (result.success) {
             window.open(result.url, '_blank');
             showModal('salesModal', result.message || "Report exported successfully!", 3000);
@@ -1173,10 +1274,9 @@
             showModal('salesModal', result.message, 5000);
           }
         })
-        .withFailureHandler((error) => {
+        .catch((error) => {
           showModal('salesModal', error.message || "Failed to export report.", 5000);
-        })
-        .generateSalesReportPDF(startDate, endDate);
+        });
     }
 
     function showModal(modalId, message, timeout = 0) {
