@@ -444,9 +444,19 @@
 
       loginBtn.disabled = true;
       spinner.style.display = 'block';
+      errorElement.textContent = "";
+
+      // Set a timeout for the server request
+      const loginTimeout = setTimeout(() => {
+        loginBtn.disabled = false;
+        spinner.style.display = 'none';
+        errorElement.textContent = "Server is not responding. Please try again later.";
+        setTimeout(() => { errorElement.textContent = ""; }, 5000);
+      }, 10000); // 10-second timeout
 
       google.script.run
         .withSuccessHandler((response) => {
+          clearTimeout(loginTimeout); // Clear the timeout on success
           loginBtn.disabled = false;
           spinner.style.display = 'none';
           if (response.success) {
@@ -467,9 +477,10 @@
           }
         })
         .withFailureHandler((error) => {
+          clearTimeout(loginTimeout); // Clear the timeout on failure
           loginBtn.disabled = false;
           spinner.style.display = 'none';
-          errorElement.textContent = "Server error during login: " + (error.message || "Unknown error.");
+          errorElement.textContent = "Login failed: " + (error.message || "Unknown error. Check server configuration.");
           setTimeout(() => { errorElement.textContent = ""; }, 5000);
         })
         .validateUser(username, password);
